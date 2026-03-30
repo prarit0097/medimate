@@ -43,7 +43,7 @@ class PatientViewSet(viewsets.ModelViewSet):
 class CaregiverRelationshipViewSet(viewsets.ModelViewSet):
     serializer_class = CaregiverRelationshipSerializer
     permission_classes = [IsAuthenticated]
-    filterset_fields = ("relationship_type", "is_primary")
+    filterset_fields = ("patient", "relationship_type", "is_primary")
     ordering_fields = ("created_at", "updated_at")
 
     def get_queryset(self):
@@ -55,7 +55,7 @@ class CaregiverRelationshipViewSet(viewsets.ModelViewSet):
 class ProviderAccessViewSet(viewsets.ModelViewSet):
     serializer_class = ProviderAccessSerializer
     permission_classes = [IsAuthenticated]
-    filterset_fields = ("provider_role", "organization")
+    filterset_fields = ("patient", "provider_role", "organization")
     ordering_fields = ("created_at", "updated_at")
 
     def get_queryset(self):

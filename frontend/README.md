@@ -6,9 +6,10 @@ Frontend workspace for the MediMate project. This is a Vite + React + TypeScript
 
 - authentication is wired to the Django backend
 - patients list, add-patient flow, and patient detail page are wired to the Django backend
+- medications, prescriptions, dose logs, caregivers, provider access, reports, and settings are wired to the Django backend
 - API base defaults to `/api/v1`
 - Vite dev server proxies `/api/*` requests to `http://127.0.0.1:8000`
-- dashboard, medications, prescriptions, reports, and some related screens still use mock data and need progressive backend migration
+- only the main dashboard page still uses mock data
 
 ## Run locally
 
@@ -31,10 +32,18 @@ cd E:\coding\MediMate
 
 ## Important files
 
-- `src/contexts/AuthContext.tsx`: login, register, logout, current-user bootstrap
-- `src/services/api.ts`: fetch wrapper and token refresh logic
+- `src/contexts/AuthContext.tsx`: login, register, logout, refresh-user, current-user bootstrap
+- `src/services/api.ts`: fetch wrapper, token refresh logic, paginated `listAll`, and upload handling
 - `src/App.tsx`: route map
 - `src/pages/Patients.tsx`: live patients listing and create-patient dialog
 - `src/pages/PatientDetail.tsx`: live patient profile detail view
-- `src/lib/mock-data.ts`: temporary mocked records used by UI pages not yet migrated
+- `src/pages/Medications.tsx`: live medications list and create flow
+- `src/pages/Prescriptions.tsx`: live prescription list and upload flow
+- `src/pages/DoseLogs.tsx`: live dose log list, create flow, and CSV export
+- `src/pages/Caregivers.tsx`: live caregiver relationship management
+- `src/pages/ProviderAccess.tsx`: live provider access management
+- `src/pages/Reports.tsx`: live summary, charts, print, and CSV export
+- `src/pages/Settings.tsx`: live profile, notification, and password settings
+- `src/lib/export-utils.ts`: CSV download helper
+- `src/lib/mock-data.ts`: temporary mocked records used only by the dashboard page
 - `vite.config.ts`: dev server and proxy settings

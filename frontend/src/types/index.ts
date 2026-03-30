@@ -119,6 +119,35 @@ export interface MedicationRecord {
   updated_at: string;
 }
 
+export interface MedicationCreatePayload {
+  patient: string;
+  prescription?: string | null;
+  name: string;
+  generic_name?: string;
+  strength?: string;
+  dosage_form?: string;
+  route?: string;
+  indication?: string;
+  instructions?: string;
+  meal_relation: "before_meal" | "after_meal" | "with_meal" | "independent";
+  start_date: string;
+  end_date?: string;
+  total_quantity: string;
+  current_quantity: string;
+  low_stock_threshold_days: number;
+  is_high_risk: boolean;
+  status: "active" | "paused" | "completed";
+  reminders?: Array<{
+    label?: string;
+    time_of_day?: string | null;
+    dose_quantity: string;
+    recurrence_type: "daily" | "specific_days" | "weekly" | "alternate_days" | "prn";
+    weekdays: number[];
+    notes?: string;
+    is_active?: boolean;
+  }>;
+}
+
 export interface DoseLogRecord {
   id: string;
   patient: string;
@@ -132,6 +161,16 @@ export interface DoseLogRecord {
   logged_by?: string | null;
   created_at: string;
   updated_at: string;
+}
+
+export interface DoseLogCreatePayload {
+  medication: string;
+  reminder?: string | null;
+  scheduled_for: string;
+  actioned_at?: string | null;
+  status: "taken" | "skipped" | "missed" | "snoozed";
+  source: "app" | "caregiver" | "provider" | "system" | "whatsapp" | "ivr";
+  note?: string;
 }
 
 export interface PrescriptionUploadRecord {
@@ -148,6 +187,12 @@ export interface PrescriptionUploadRecord {
   updated_at: string;
 }
 
+export interface PrescriptionUploadCreatePayload {
+  patient: string;
+  status?: "pending" | "reviewed" | "needs_clarification";
+  review_notes?: string;
+}
+
 export interface CaregiverRelationshipRecord {
   id: string;
   patient: string;
@@ -162,6 +207,16 @@ export interface CaregiverRelationshipRecord {
   updated_at: string;
 }
 
+export interface CaregiverRelationshipCreatePayload {
+  patient: string;
+  caregiver: string;
+  relationship_type: string;
+  is_primary: boolean;
+  receives_missed_dose_alerts: boolean;
+  receives_refill_alerts: boolean;
+  receives_weekly_summary: boolean;
+}
+
 export interface ProviderAccessRecord {
   id: string;
   patient: string;
@@ -173,6 +228,22 @@ export interface ProviderAccessRecord {
   can_manage_medications: boolean;
   created_at: string;
   updated_at: string;
+}
+
+export interface ProviderAccessCreatePayload {
+  patient: string;
+  provider: string;
+  provider_role: "doctor" | "pharmacist" | "nurse" | "care_coordinator";
+  organization?: string;
+  can_view_full_medication_list: boolean;
+  can_manage_medications: boolean;
+}
+
+export interface UpdateProfilePayload {
+  full_name: string;
+  phone_number?: string;
+  preferred_language: string;
+  timezone: string;
 }
 
 export interface PatientDashboardResponse {

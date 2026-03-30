@@ -56,7 +56,9 @@ Backend API/docs: `http://127.0.0.1:8000`
 - `POST /api/v1/auth/register/`
 - `POST /api/v1/auth/login/`
 - `POST /api/v1/auth/token/refresh/`
-- `GET /api/v1/auth/me/`
+- `GET|PATCH /api/v1/auth/me/`
+- `GET /api/v1/auth/users/`
+- `POST /api/v1/auth/change-password/`
 - `GET|POST /api/v1/patients/`
 - `GET|POST /api/v1/caregiver-links/`
 - `GET|POST /api/v1/provider-access/`
@@ -79,11 +81,11 @@ This scaffold is aligned to the MVP slice from the planning document:
 
 ## Frontend note
 
-The imported care portal is now part of this repo. Authentication plus the Patients list/create/detail flow are wired to the backend. Several other dashboard/detail screens still use temporary mock data while API migration continues.
+The imported care portal is now part of this repo. Authentication, patients, medications, prescriptions, dose logs, caregivers, provider access, reports, and settings are wired to the backend. The main dashboard page still uses temporary mock data.
 
 ## Suggested next build steps
 
-1. Migrate frontend dashboard, patient, medication, prescription, and report screens from mock data to live APIs.
+1. Migrate the frontend dashboard page from mock data to live APIs.
 2. Add WhatsApp and IVR event ingestion endpoints.
 3. Add OCR extraction workflow for `PrescriptionUpload`.
 4. Split patient/caregiver/provider permissions into stronger role-based policies.

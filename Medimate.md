@@ -28,6 +28,7 @@ Current codebase ek Django + DRF backend scaffold hai jisme:
 - root landing page at `/`
 - integrated `frontend/` Vite + React care portal workspace
 - JWT authentication
+- profile update, password change, and user-directory auth endpoints
 - custom email-based user model
 - patient records
 - caregiver relationships
@@ -39,6 +40,8 @@ Current codebase ek Django + DRF backend scaffold hai jisme:
 - OpenAPI schema and Swagger docs
 - frontend auth wiring to backend
 - frontend patients list, add-patient flow, and patient detail wired to backend
+- frontend medications, prescriptions, dose logs, caregivers, provider access, reports, and settings screens wired to backend
+- frontend dashboard page abhi bhi temporary mock-data driven hai
 
 ## Who Uses the App
 
@@ -100,23 +103,22 @@ Typical flow:
 ```powershell
 cd E:\coding\MediMate
 python -m venv .venv
-.\.venv\Scripts\activate
-pip install -r requirements.txt
+.\.venv\Scripts\python -m pip install -r requirements.txt
 copy .env.example .env
-python manage.py migrate
-python manage.py createsuperuser
-python manage.py runserver
+.\.venv\Scripts\python manage.py migrate
+.\.venv\Scripts\python manage.py createsuperuser
+.\.venv\Scripts\python manage.py runserver
 ```
 
 ### Useful development commands
 
 ```powershell
 cd E:\coding\MediMate
-python manage.py check
-python manage.py makemigrations
-python manage.py migrate
-python manage.py test
-python manage.py runserver
+.\.venv\Scripts\python manage.py check
+.\.venv\Scripts\python manage.py makemigrations
+.\.venv\Scripts\python manage.py migrate
+.\.venv\Scripts\python manage.py test
+.\.venv\Scripts\python manage.py runserver
 ```
 
 ### Frontend setup
@@ -155,6 +157,9 @@ Project `.env` file use karta hai. Current supported values:
 - `POST /api/v1/auth/login/`
 - `POST /api/v1/auth/token/refresh/`
 - `GET /api/v1/auth/me/`
+- `PATCH /api/v1/auth/me/`
+- `GET /api/v1/auth/users/`
+- `POST /api/v1/auth/change-password/`
 
 ### Core care
 
@@ -316,31 +321,45 @@ Code inside `common/views.py`:
 
 `/frontend/src/contexts/AuthContext.tsx`
 - frontend authentication state manage karta hai
-- login, register, logout aur current-user bootstrap backend API se karta hai
+- login, register, logout, refresh-user aur current-user bootstrap backend API se karta hai
 
 `/frontend/src/services/api.ts`
 - frontend fetch client
 - JWT token attach karta hai
 - refresh token flow handle karta hai
+- paginated endpoints ko full-list fetch karne ke liye `listAll` helper deta hai
+- upload requests par bhi auth refresh/error handling karta hai
 
 `/frontend/src/types/index.ts`
 - shared frontend TypeScript types
 - user, patient, medication, dose log, dashboard aur auth payload shapes define karta hai
+- create/update payload contracts bhi yahin stored hain
 
 `/frontend/src/lib/patient-utils.ts`
 - patient-related frontend helper functions
 - conditions parsing, initials, adherence score, refill risk, age aur file-name formatting handle karta hai
 
+`/frontend/src/lib/export-utils.ts`
+- CSV export helper
+- dose logs aur reports export ko browser download mein convert karta hai
+
 `/frontend/src/lib/mock-data.ts`
 - temporary mock records
-- jo frontend pages abhi live backend se wire nahi hui hain, unke liye placeholder data deta hai
+- ab mainly `Dashboard.tsx` ke liye placeholder data deta hai
 
 `/frontend/src/pages/*.tsx`
 - main route-level pages
 - login/register backend-ready hain
 - `Patients.tsx` live patient list aur create dialog backend se chalata hai
 - `PatientDetail.tsx` live patient profile, medications, logs, prescriptions aur care-team data backend se load karta hai
-- dashboard, medications, prescriptions list, reports aur related remaining screens abhi mock-data driven hain
+- `Medications.tsx` live medication list, reminder summary aur add-medication dialog provide karta hai
+- `Prescriptions.tsx` live prescription list aur upload dialog provide karta hai
+- `DoseLogs.tsx` live activity list, stats, add-log dialog aur CSV export provide karta hai
+- `Caregivers.tsx` live caregiver relationship list aur add-caregiver dialog provide karta hai
+- `ProviderAccess.tsx` live provider access list aur add-provider dialog provide karta hai
+- `Reports.tsx` live summary cards, charts, refill tracking aur export/print actions provide karta hai
+- `Settings.tsx` live profile update, local notification preferences aur password-change flow provide karta hai
+- `Dashboard.tsx` abhi mock-data driven hai
 
 `/frontend/src/components/layout/*`
 - authenticated app shell, sidebar aur topbar components
@@ -401,12 +420,17 @@ Code inside `accounts/serializers.py`:
   - user details read format deta hai
 - `RegisterSerializer`
   - new user registration validation aur creation karta hai
+- `UpdateUserSerializer`
+  - current user profile update payload validate karta hai
+- `ChangePasswordSerializer`
+  - current password verify karta hai
+  - new password change workflow validate aur save karta hai
 - `MediMateTokenObtainPairSerializer`
   - login response mein JWT ke saath user data return karta hai
   - token claims mein role aur full name inject karta hai
 
 `/accounts/tests.py`
-- register, login aur `/me` endpoint ka integration test
+- register, login, `/me`, profile update, user directory aur password change ka integration test
 
 `/accounts/urls.py`
 - auth routes map karta hai
@@ -417,7 +441,9 @@ Code inside `accounts/serializers.py`:
 Code inside `accounts/views.py`:
 - `RegisterView`: new user create karta hai
 - `LoginView`: JWT login endpoint
-- `MeView`: current logged-in user details return karta hai
+- `MeView`: current logged-in user details return aur update karta hai
+- `UserDirectoryView`: searchable user list return karta hai
+- `ChangePasswordView`: authenticated password change endpoint deta hai
 
 `/accounts/migrations/__init__.py`
 - migrations package marker
@@ -514,8 +540,10 @@ Code inside `care/views.py`:
   - patient CRUD provide karta hai
 - `CaregiverRelationshipViewSet`
   - caregiver link CRUD provide karta hai
+  - patient-based filtering support karta hai
 - `ProviderAccessViewSet`
   - provider access CRUD provide karta hai
+  - patient-based filtering support karta hai
 - `PrescriptionUploadViewSet`
   - prescription upload CRUD provide karta hai
 - `MedicationViewSet`
@@ -541,12 +569,14 @@ Code inside `care/views.py`:
 
 ## Current Testing Coverage
 
-Abhi 4 basic tests hain:
+Abhi 5 backend tests aur 1 frontend smoke test run hote hain:
 
 - root landing page test
 - health check test
 - auth register/login/me flow test
+- auth profile update, user directory, aur password change flow test
 - patient/medication/dashboard integration test
+- frontend Vitest example smoke test
 
 ## Current Limitations
 
@@ -557,7 +587,8 @@ Abhi project mein ye cheezein baaki hain:
 - prescription OCR processing pipeline
 - Celery reminder scheduler
 - strong role-based permission system
-- remaining frontend data pages ko live backend APIs par migrate karna
+- frontend dashboard page ko live backend APIs par migrate karna
+- edit/delete flows ka richer UX abhi missing hai for most newly-wired frontend pages
 - Flutter app
 - ABDM/ABHA integration
 
@@ -580,3 +611,8 @@ Yeh file har code, file, architecture, command, API, workflow ya config change k
 - frontend auth backend se wire kiya gaya aur Vite proxy/env config add ki gayi
 - frontend Patients page ko live API list/create flow par migrate kiya gaya
 - frontend Patient Detail page ko live backend data par migrate kiya gaya
+- auth profile update, user directory, aur password change backend endpoints add kiye gaye
+- frontend medications, prescriptions, dose logs, caregivers, provider access, reports aur settings pages ko live backend workflows par migrate kiya gaya
+- frontend CSV export helper add kiya gaya
+- patient-scoped caregiver/provider filtering backend aur frontend dono mein align ki gayi
+- run commands ko `.venv` Python usage ke saath clarify kiya gaya

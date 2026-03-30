@@ -39,7 +39,7 @@ import {
   splitConditions,
 } from "@/lib/patient-utils";
 import { apiClient } from "@/services/api";
-import type { PaginatedResponse, PatientCreatePayload, PatientRecord } from "@/types";
+import type { PatientCreatePayload, PatientRecord } from "@/types";
 
 const patientSchema = z.object({
   full_name: z.string().trim().min(2, "Name must be at least 2 characters"),
@@ -94,7 +94,7 @@ export default function Patients() {
 
   const patientsQuery = useQuery({
     queryKey: ["patients"],
-    queryFn: () => apiClient.get<PaginatedResponse<PatientRecord>>("/patients/"),
+    queryFn: () => apiClient.listAll<PatientRecord>("/patients/"),
   });
 
   const createPatientMutation = useMutation({
@@ -118,7 +118,7 @@ export default function Patients() {
     },
   });
 
-  const patients = patientsQuery.data?.results ?? [];
+  const patients = patientsQuery.data ?? [];
   const filteredPatients = useMemo(() => {
     const term = deferredSearch.trim().toLowerCase();
     if (!term) {

@@ -40,7 +40,6 @@ import type {
   CaregiverRelationshipRecord,
   DoseLogRecord,
   MedicationRecord,
-  PaginatedResponse,
   PatientDashboardResponse,
   PatientRecord,
   PrescriptionUploadRecord,
@@ -77,43 +76,43 @@ export default function PatientDetail() {
   const medicationsQuery = useQuery({
     queryKey: ["patient-medications", id],
     enabled: Boolean(id),
-    queryFn: () =>
-      apiClient.get<PaginatedResponse<MedicationRecord>>(`/medications/?patient=${id}`),
+    queryFn: () => apiClient.listAll<MedicationRecord>(`/medications/?patient=${id}`),
   });
 
   const doseLogsQuery = useQuery({
     queryKey: ["patient-dose-logs", id],
     enabled: Boolean(id),
-    queryFn: () => apiClient.get<PaginatedResponse<DoseLogRecord>>(`/dose-logs/?patient=${id}`),
+    queryFn: () => apiClient.listAll<DoseLogRecord>(`/dose-logs/?patient=${id}`),
   });
 
   const prescriptionsQuery = useQuery({
     queryKey: ["patient-prescriptions", id],
     enabled: Boolean(id),
     queryFn: () =>
-      apiClient.get<PaginatedResponse<PrescriptionUploadRecord>>(`/prescriptions/?patient=${id}`),
+      apiClient.listAll<PrescriptionUploadRecord>(`/prescriptions/?patient=${id}`),
   });
 
   const caregiversQuery = useQuery({
     queryKey: ["caregiver-links"],
     enabled: Boolean(id),
     queryFn: () =>
-      apiClient.get<PaginatedResponse<CaregiverRelationshipRecord>>("/caregiver-links/"),
+      apiClient.listAll<CaregiverRelationshipRecord>(`/caregiver-links/?patient=${id}`),
   });
 
   const providersQuery = useQuery({
     queryKey: ["provider-access"],
     enabled: Boolean(id),
-    queryFn: () => apiClient.get<PaginatedResponse<ProviderAccessRecord>>("/provider-access/"),
+    queryFn: () =>
+      apiClient.listAll<ProviderAccessRecord>(`/provider-access/?patient=${id}`),
   });
 
   const patient = patientQuery.data ?? dashboardQuery.data?.patient;
   const summary = dashboardQuery.data?.dashboard ?? patient?.adherence_summary;
-  const medications = medicationsQuery.data?.results ?? [];
-  const logs = doseLogsQuery.data?.results ?? [];
-  const prescriptions = prescriptionsQuery.data?.results ?? [];
-  const caregivers = (caregiversQuery.data?.results ?? []).filter((item) => item.patient === id);
-  const providers = (providersQuery.data?.results ?? []).filter((item) => item.patient === id);
+  const medications = medicationsQuery.data ?? [];
+  const logs = doseLogsQuery.data ?? [];
+  const prescriptions = prescriptionsQuery.data ?? [];
+  const caregivers = caregiversQuery.data ?? [];
+  const providers = providersQuery.data ?? [];
 
   const medicationMap = useMemo(
     () =>
