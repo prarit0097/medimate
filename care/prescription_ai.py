@@ -45,7 +45,6 @@ def extract_prescription_with_ai(prescription: PrescriptionUpload):
         max_output_tokens=1800,
         text={
             "format": {"type": "json_object"},
-            "verbosity": "low",
         },
     )
 

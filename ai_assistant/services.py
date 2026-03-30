@@ -92,7 +92,6 @@ def generate_ai_assist_response(
         max_output_tokens=1400,
         text={
             "format": {"type": "json_object"},
-            "verbosity": "low",
         },
         user=str(user.id),
     )
