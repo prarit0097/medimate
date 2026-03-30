@@ -1,6 +1,9 @@
-# MediMate API
+# MediMate
 
-API-first Django backend for the MediMate medication adherence product. The backend is structured so the same APIs can power a web client now and a Flutter app later.
+MediMate is an API-first medication adherence platform. This repository now contains:
+
+- Django backend in the repo root
+- Vite + React frontend in `frontend/`
 
 ## What is included
 
@@ -10,6 +13,7 @@ API-first Django backend for the MediMate medication adherence product. The back
 - Provider access records for doctor/pharmacist visibility
 - Adherence and refill summary endpoint for dashboards
 - OpenAPI schema and Swagger docs
+- Integrated care-portal frontend workspace
 
 ## Stack
 
@@ -19,10 +23,14 @@ API-first Django backend for the MediMate medication adherence product. The back
 - Simple JWT
 - drf-spectacular
 - SQLite by default, Postgres-ready via `DATABASE_URL`
+- React 18 + TypeScript + Vite + Tailwind CSS for the frontend
 
 ## Quick start
 
+### Backend
+
 ```powershell
+cd E:\coding\MediMate
 python -m venv .venv
 .\.venv\Scripts\activate
 pip install -r requirements.txt
@@ -31,6 +39,17 @@ python manage.py migrate
 python manage.py createsuperuser
 python manage.py runserver
 ```
+
+### Frontend
+
+```powershell
+cd E:\coding\MediMate\frontend
+npm install
+npm run dev
+```
+
+Frontend dev server: `http://127.0.0.1:8080`
+Backend API/docs: `http://127.0.0.1:8000`
 
 ## Main API routes
 
@@ -58,11 +77,15 @@ This scaffold is aligned to the MVP slice from the planning document:
 - Dose logs are channel-aware (`app`, `whatsapp`, `ivr`, `caregiver`, `provider`, `system`).
 - Dashboard summaries expose adherence percentage and refill risk for provider-lite and caregiver views.
 
+## Frontend note
+
+The imported care portal is now part of this repo. Authentication is wired to the backend, but several dashboard/detail screens still use temporary mock data while API migration continues.
+
 ## Suggested next build steps
 
-1. Add WhatsApp and IVR event ingestion endpoints.
-2. Add OCR extraction workflow for `PrescriptionUpload`.
-3. Split patient/caregiver/provider permissions into stronger role-based policies.
-4. Add task scheduling with Celery + Redis for reminders and escalation.
-5. Add ABDM/ABHA integration behind a dedicated interoperability app.
-
+1. Migrate frontend dashboard, patient, medication, prescription, and report screens from mock data to live APIs.
+2. Add WhatsApp and IVR event ingestion endpoints.
+3. Add OCR extraction workflow for `PrescriptionUpload`.
+4. Split patient/caregiver/provider permissions into stronger role-based policies.
+5. Add task scheduling with Celery + Redis for reminders and escalation.
+6. Add ABDM/ABHA integration behind a dedicated interoperability app.

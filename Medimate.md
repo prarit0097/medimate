@@ -26,6 +26,7 @@ Project isliye create kiya gaya hai kyunki chronic patients ko medicines regular
 Current codebase ek Django + DRF backend scaffold hai jisme:
 
 - root landing page at `/`
+- integrated `frontend/` Vite + React care portal workspace
 - JWT authentication
 - custom email-based user model
 - patient records
@@ -36,6 +37,7 @@ Current codebase ek Django + DRF backend scaffold hai jisme:
 - dose logging
 - adherence/refill dashboard summary
 - OpenAPI schema and Swagger docs
+- frontend auth wiring to backend
 
 ## Who Uses the App
 
@@ -83,12 +85,19 @@ Typical flow:
 - django-cors-headers
 - Pillow
 - SQLite default database
+- React 18
+- TypeScript
+- Vite
+- Tailwind CSS
+- React Router
+- TanStack Query
 
 ## Run Commands
 
 ### First setup
 
 ```powershell
+cd E:\coding\MediMate
 python -m venv .venv
 .\.venv\Scripts\activate
 pip install -r requirements.txt
@@ -101,11 +110,20 @@ python manage.py runserver
 ### Useful development commands
 
 ```powershell
+cd E:\coding\MediMate
 python manage.py check
 python manage.py makemigrations
 python manage.py migrate
 python manage.py test
 python manage.py runserver
+```
+
+### Frontend setup
+
+```powershell
+cd E:\coding\MediMate\frontend
+npm install
+npm run dev
 ```
 
 ### API documentation
@@ -114,6 +132,7 @@ python manage.py runserver
 - Swagger UI: `http://127.0.0.1:8000/api/docs/`
 - OpenAPI Schema: `http://127.0.0.1:8000/api/schema/`
 - Health Check: `http://127.0.0.1:8000/api/health/`
+- Frontend dev app: `http://127.0.0.1:8080/`
 
 ## Environment Variables
 
@@ -161,6 +180,7 @@ Project `.env` file use karta hai. Current supported values:
 
 `/.gitignore`
 - virtualenv, db, media, cache aur local env files ko ignore karta hai
+- `frontend/node_modules`, `frontend/dist` aur frontend local env files bhi ignore karta hai
 
 `/db.sqlite3`
 - current local development database
@@ -182,6 +202,10 @@ Project `.env` file use karta hai. Current supported values:
 
 `/agent.md`
 - project workflow instructions file
+
+`/frontend/`
+- imported care portal frontend workspace
+- Vite + React + TypeScript app yahin rehti hai
 
 ### Config folder
 
@@ -254,8 +278,78 @@ Code inside `common/views.py`:
 
 `/templates/home.html`
 - root URL ka landing page template
-- browser par docs, admin, health aur schema links dikhata hai
+- browser par docs, admin, health, schema aur frontend dev link dikhata hai
 - API-first build ko readable homepage ke form mein present karta hai
+
+### Frontend workspace
+
+`/frontend/.env.example`
+- frontend API base ka sample env file
+- default `/api/v1` use karta hai
+
+`/frontend/.env`
+- local frontend env file
+- dev server ke liye backend API base configure karta hai
+
+`/frontend/package.json`
+- frontend dependencies aur scripts define karta hai
+- `npm run dev`, `npm run build`, `npm run test` yahin se milte hain
+
+`/frontend/package-lock.json`
+- npm dependency lock file
+
+`/frontend/vite.config.ts`
+- Vite dev server config
+- frontend ko `127.0.0.1:8080` par run karta hai
+- `/api/*` requests ko Django backend par proxy karta hai
+
+`/frontend/index.html`
+- frontend app shell HTML
+
+`/frontend/src/main.tsx`
+- React root mount karta hai
+
+`/frontend/src/App.tsx`
+- frontend route tree define karta hai
+- landing, login, register aur protected `/app/*` routes wire karta hai
+
+`/frontend/src/contexts/AuthContext.tsx`
+- frontend authentication state manage karta hai
+- login, register, logout aur current-user bootstrap backend API se karta hai
+
+`/frontend/src/services/api.ts`
+- frontend fetch client
+- JWT token attach karta hai
+- refresh token flow handle karta hai
+
+`/frontend/src/types/index.ts`
+- shared frontend TypeScript types
+- user, patient, medication, dose log, dashboard aur auth payload shapes define karta hai
+
+`/frontend/src/lib/mock-data.ts`
+- temporary mock records
+- jo frontend pages abhi live backend se wire nahi hui hain, unke liye placeholder data deta hai
+
+`/frontend/src/pages/*.tsx`
+- main route-level pages
+- login/register backend-ready hain
+- dashboard, patients, medications, prescriptions, reports aur related screens abhi mock-data driven hain
+
+`/frontend/src/components/layout/*`
+- authenticated app shell, sidebar aur topbar components
+
+`/frontend/src/components/common/*`
+- reusable display components like stats, rings, empty states, and badges
+
+`/frontend/src/components/ui/*`
+- Lovable/shadcn generated UI primitive components
+- buttons, inputs, dialogs, tables, tabs, sidebar, toast, etc.
+
+`/frontend/public/*`
+- favicon, placeholder assets, robots file
+
+`/frontend/README.md`
+- frontend-specific run notes aur current status summary
 
 ### Accounts app
 
@@ -456,7 +550,7 @@ Abhi project mein ye cheezein baaki hain:
 - prescription OCR processing pipeline
 - Celery reminder scheduler
 - strong role-based permission system
-- frontend web UI
+- frontend data pages ko live backend APIs par migrate karna
 - Flutter app
 - ABDM/ABHA integration
 
@@ -475,3 +569,5 @@ Yeh file har code, file, architecture, command, API, workflow ya config change k
 - `agent.md` workflow file reference add ki gayi
 - local `.env` file generated Django secret key ke saath create ki gayi
 - root `/` landing page add ki gayi taaki browser par empty-path 404 na aaye
+- external Lovable frontend repo import karke `frontend/` workspace add ki gayi
+- frontend auth backend se wire kiya gaya aur Vite proxy/env config add ki gayi
