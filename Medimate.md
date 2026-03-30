@@ -152,6 +152,11 @@ Project `.env` file use karta hai. Current supported values:
 - sample environment configuration
 - local development ke liye required env keys dikhata hai
 
+`/.env`
+- local environment configuration file
+- gitignored hai aur machine-specific secrets rakhta hai
+- current local development ke liye generated Django `SECRET_KEY` isme stored hai
+
 `/.gitignore`
 - virtualenv, db, media, cache aur local env files ko ignore karta hai
 
@@ -456,3 +461,4 @@ Yeh file har code, file, architecture, command, API, workflow ya config change k
 - file-by-file explanation add ki gayi
 - run commands aur maintenance rule add kiye gaye
 - `agent.md` workflow file reference add ki gayi
+- local `.env` file generated Django secret key ke saath create ki gayi
