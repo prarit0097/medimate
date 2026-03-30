@@ -5,6 +5,7 @@ from rest_framework import status
 from rest_framework.test import APITestCase
 
 from accounts.models import User
+from ai_assistant.services import AIResponseError
 
 
 class AIAssistantTests(APITestCase):
@@ -52,3 +53,19 @@ class AIAssistantTests(APITestCase):
         self.assertEqual(response.data["surface"], "dashboard")
         self.assertEqual(response.data["title"], "Workspace summary")
         mock_generate.assert_called_once()
+
+    @patch("ai_assistant.views.generate_ai_assist_response")
+    def test_assist_endpoint_handles_openai_failures(self, mock_generate):
+        mock_generate.side_effect = AIResponseError("OpenAI request failed: model rejected the request.")
+
+        response = self.client.post(
+            "/api/v1/ai/assist/",
+            {
+                "surface": "dashboard",
+                "question": "What needs attention today?",
+            },
+            format="json",
+        )
+
+        self.assertEqual(response.status_code, status.HTTP_502_BAD_GATEWAY)
+        self.assertIn("OpenAI request failed", response.data["detail"])

@@ -16,6 +16,7 @@ from .models import (
 from .prescription_ai import (
     PrescriptionAIError,
     PrescriptionAIConfigurationError,
+    PrescriptionAIResponseError,
     create_medications_from_extraction,
     extract_prescription_with_ai,
 )
@@ -95,6 +96,11 @@ class PrescriptionUploadViewSet(viewsets.ModelViewSet):
             return Response(
                 {"detail": str(exc)},
                 status=status.HTTP_503_SERVICE_UNAVAILABLE,
+            )
+        except PrescriptionAIResponseError as exc:
+            return Response(
+                {"detail": str(exc)},
+                status=status.HTTP_502_BAD_GATEWAY,
             )
         except PrescriptionAIError as exc:
             return Response(

@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import json
+import re
 from datetime import timedelta
 
 from django.conf import settings
@@ -83,12 +84,12 @@ def generate_ai_assist_response(
     )
 
     client = _get_openai_client()
-    response = client.responses.create(
+    response = _create_ai_response(
+        client=client,
         model=settings.OPENAI_MODEL,
         instructions=_system_instructions(user.preferred_language),
         input=_user_prompt(surface=surface, question=question, context=context),
-        max_output_tokens=900,
-        temperature=0.4,
+        max_output_tokens=1400,
         text={
             "format": {"type": "json_object"},
             "verbosity": "low",
@@ -252,6 +253,15 @@ def _get_openai_client():
     return OpenAI(api_key=settings.OPENAI_API_KEY)
 
 
+def _create_ai_response(*, client, **kwargs):
+    try:
+        return client.responses.create(**kwargs)
+    except Exception as exc:
+        if exc.__class__.__module__.startswith("openai"):
+            raise AIResponseError(f"OpenAI request failed: {exc}") from exc
+        raise
+
+
 def _system_instructions(preferred_language: str):
     language = "Hindi" if preferred_language == "hi" else "English"
     return (
@@ -261,7 +271,11 @@ def _system_instructions(preferred_language: str):
         "If risk is serious, advise contacting a clinician. "
         f"Write the answer in {language}. "
         "Return a JSON object with keys: title, summary, highlights, actions, warnings, disclaimer. "
-        "Use short strings. highlights, actions, and warnings must be arrays."
+        "Return raw JSON only with no markdown fences or extra prose. "
+        "summary must be 2 short sentences max. "
+        "highlights and actions must contain at most 3 items each. "
+        "warnings must contain at most 2 items. "
+        "Each array item must be a short single sentence."
     )
 
 
@@ -319,7 +333,26 @@ def _parse_response_json(output_text: str):
     try:
         return json.loads(output_text)
     except json.JSONDecodeError as exc:
+        extracted = _extract_json_object(output_text)
+        if extracted is not None:
+            try:
+                return json.loads(extracted)
+            except json.JSONDecodeError:
+                pass
         raise AIResponseError("OpenAI returned invalid JSON for the assistant response.") from exc
+
+
+def _extract_json_object(output_text: str):
+    fenced_match = re.search(r"```(?:json)?\s*(\{.*\})\s*```", output_text, re.DOTALL)
+    if fenced_match:
+        return fenced_match.group(1).strip()
+
+    start = output_text.find("{")
+    end = output_text.rfind("}")
+    if start == -1 or end == -1 or end <= start:
+        return None
+
+    return output_text[start : end + 1].strip()
 
 
 def _serialize_patient(patient):

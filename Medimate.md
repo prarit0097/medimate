@@ -646,7 +646,7 @@ Code inside `care/views.py`:
 
 ## Current Testing Coverage
 
-Abhi 8 backend tests aur 1 frontend smoke test run hote hain:
+Abhi 9 backend tests aur 1 frontend smoke test run hote hain:
 
 - root landing page test
 - health check test
@@ -656,6 +656,7 @@ Abhi 8 backend tests aur 1 frontend smoke test run hote hain:
 - prescription AI extraction and medication-draft creation flow test
 - AI status endpoint test
 - AI assist endpoint contract test
+- AI assist OpenAI failure handling test
 - frontend Vitest example smoke test
 
 ## Current Limitations
@@ -712,3 +713,5 @@ Yeh file har code, file, architecture, command, API, workflow ya config change k
 - new `care/prescription_ai.py` extraction service add ki gayi
 - prescription AI extraction endpoint aur medication draft creation endpoint add kiye gaye
 - prescriptions page par `AI Extract` aur `Create Meds` workflow add kiya gaya
+- `gpt-5-mini` compatibility ke liye AI requests se unsupported `temperature` parameter hataaya gaya
+- AI assistant aur prescription extraction response parsing ko harden kiya gaya taaki raw/fenced JSON safely parse ho sake

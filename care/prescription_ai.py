@@ -3,6 +3,7 @@ from __future__ import annotations
 import base64
 import json
 import mimetypes
+import re
 from datetime import datetime
 
 from django.conf import settings
@@ -19,6 +20,10 @@ class PrescriptionAIConfigurationError(PrescriptionAIError):
     pass
 
 
+class PrescriptionAIResponseError(PrescriptionAIError):
+    pass
+
+
 def extract_prescription_with_ai(prescription: PrescriptionUpload):
     if not settings.OPENAI_API_KEY:
         raise PrescriptionAIConfigurationError(
@@ -27,7 +32,8 @@ def extract_prescription_with_ai(prescription: PrescriptionUpload):
 
     content = _build_file_content(prescription)
     client = _get_openai_client()
-    response = client.responses.create(
+    response = _create_ai_response(
+        client=client,
         model=settings.OPENAI_VISION_MODEL,
         instructions=_extraction_instructions(),
         input=[
@@ -37,7 +43,6 @@ def extract_prescription_with_ai(prescription: PrescriptionUpload):
             }
         ],
         max_output_tokens=1800,
-        temperature=0.1,
         text={
             "format": {"type": "json_object"},
             "verbosity": "low",
@@ -153,6 +158,15 @@ def _get_openai_client():
     return OpenAI(api_key=settings.OPENAI_API_KEY)
 
 
+def _create_ai_response(*, client, **kwargs):
+    try:
+        return client.responses.create(**kwargs)
+    except Exception as exc:
+        if exc.__class__.__module__.startswith("openai"):
+            raise PrescriptionAIResponseError(f"OpenAI request failed: {exc}") from exc
+        raise
+
+
 def _build_file_content(prescription: PrescriptionUpload):
     content_type = _guess_content_type(prescription)
     with prescription.image.open("rb") as file_handle:
@@ -169,6 +183,7 @@ def _build_file_content(prescription: PrescriptionUpload):
         "Each reminder should include: label, time_of_day (HH:MM or HH:MM:SS or null), "
         "dose_quantity, recurrence_type (daily, specific_days, weekly, alternate_days, prn), "
         "weekdays (0-6 array), notes. "
+        "Return raw JSON only with no markdown fences or extra prose. "
         "If a field is unclear, use an empty string, null, or empty array. "
         "Do not invent medications that are not visible in the document."
     )
@@ -220,7 +235,26 @@ def _parse_json(output_text: str):
     try:
         return json.loads(output_text)
     except json.JSONDecodeError as exc:
+        extracted = _extract_json_object(output_text)
+        if extracted is not None:
+            try:
+                return json.loads(extracted)
+            except json.JSONDecodeError:
+                pass
         raise PrescriptionAIError("OpenAI returned invalid JSON for prescription extraction.") from exc
+
+
+def _extract_json_object(output_text: str):
+    fenced_match = re.search(r"```(?:json)?\s*(\{.*\})\s*```", output_text, re.DOTALL)
+    if fenced_match:
+        return fenced_match.group(1).strip()
+
+    start = output_text.find("{")
+    end = output_text.rfind("}")
+    if start == -1 or end == -1 or end <= start:
+        return None
+
+    return output_text[start : end + 1].strip()
 
 
 def _normalize_extraction_payload(payload: dict):
