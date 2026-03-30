@@ -311,6 +311,7 @@ Code inside `common/views.py`:
 
 `/frontend/index.html`
 - frontend app shell HTML
+- browser tab title aur basic SEO/social meta branding yahin define hoti hai
 
 `/frontend/src/main.tsx`
 - React root mount karta hai
@@ -616,3 +617,4 @@ Yeh file har code, file, architecture, command, API, workflow ya config change k
 - frontend CSV export helper add kiya gaya
 - patient-scoped caregiver/provider filtering backend aur frontend dono mein align ki gayi
 - run commands ko `.venv` Python usage ke saath clarify kiya gaya
+- frontend browser-tab title aur meta branding ko `MediMate` par update kiya gaya
