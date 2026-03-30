@@ -41,7 +41,7 @@ Current codebase ek Django + DRF backend scaffold hai jisme:
 - frontend auth wiring to backend
 - frontend patients list, add-patient flow, and patient detail wired to backend
 - frontend medications, prescriptions, dose logs, caregivers, provider access, reports, and settings screens wired to backend
-- frontend dashboard page abhi bhi temporary mock-data driven hai
+- frontend dashboard page bhi live backend aggregates aur actions se wired hai
 
 ## Who Uses the App
 
@@ -340,13 +340,18 @@ Code inside `common/views.py`:
 - patient-related frontend helper functions
 - conditions parsing, initials, adherence score, refill risk, age aur file-name formatting handle karta hai
 
+`/frontend/src/lib/dashboard-utils.ts`
+- dashboard aggregation helper
+- patients, medications, reminders aur dose logs ko combine karke live dashboard data banata hai
+
 `/frontend/src/lib/export-utils.ts`
 - CSV export helper
 - dose logs aur reports export ko browser download mein convert karta hai
 
 `/frontend/src/lib/mock-data.ts`
 - temporary mock records
-- ab mainly `Dashboard.tsx` ke liye placeholder data deta hai
+- legacy sample data file
+- current live screens is file par depend nahi karti
 
 `/frontend/src/pages/*.tsx`
 - main route-level pages
@@ -360,7 +365,7 @@ Code inside `common/views.py`:
 - `ProviderAccess.tsx` live provider access list aur add-provider dialog provide karta hai
 - `Reports.tsx` live summary cards, charts, refill tracking aur export/print actions provide karta hai
 - `Settings.tsx` live profile update, local notification preferences aur password-change flow provide karta hai
-- `Dashboard.tsx` abhi mock-data driven hai
+- `Dashboard.tsx` live schedule, care network, refill alerts, recent activity, aur quick actions provide karta hai
 
 `/frontend/src/components/layout/*`
 - authenticated app shell, sidebar aur topbar components
@@ -588,7 +593,7 @@ Abhi project mein ye cheezein baaki hain:
 - prescription OCR processing pipeline
 - Celery reminder scheduler
 - strong role-based permission system
-- frontend dashboard page ko live backend APIs par migrate karna
+- top-bar global search abhi backend se wire nahi hai
 - edit/delete flows ka richer UX abhi missing hai for most newly-wired frontend pages
 - Flutter app
 - ABDM/ABHA integration
@@ -618,3 +623,4 @@ Yeh file har code, file, architecture, command, API, workflow ya config change k
 - patient-scoped caregiver/provider filtering backend aur frontend dono mein align ki gayi
 - run commands ko `.venv` Python usage ke saath clarify kiya gaya
 - frontend browser-tab title aur meta branding ko `MediMate` par update kiya gaya
+- frontend dashboard ko live backend data, schedule actions, care network counts, aur responsive widgets ke saath rebuild kiya gaya

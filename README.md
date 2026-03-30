@@ -81,11 +81,11 @@ This scaffold is aligned to the MVP slice from the planning document:
 
 ## Frontend note
 
-The imported care portal is now part of this repo. Authentication, patients, medications, prescriptions, dose logs, caregivers, provider access, reports, and settings are wired to the backend. The main dashboard page still uses temporary mock data.
+The imported care portal is now part of this repo. Authentication, dashboard, patients, medications, prescriptions, dose logs, caregivers, provider access, reports, and settings are wired to the backend.
 
 ## Suggested next build steps
 
-1. Migrate the frontend dashboard page from mock data to live APIs.
+1. Add richer edit/delete flows and deeper workflow actions across the frontend screens.
 2. Add WhatsApp and IVR event ingestion endpoints.
 3. Add OCR extraction workflow for `PrescriptionUpload`.
 4. Split patient/caregiver/provider permissions into stronger role-based policies.
