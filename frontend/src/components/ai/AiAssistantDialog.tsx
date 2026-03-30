@@ -13,7 +13,6 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { ScrollArea } from "@/components/ui/scroll-area";
 import { Separator } from "@/components/ui/separator";
 import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
@@ -144,7 +143,7 @@ export function AiAssistantDialog({
       </Button>
 
       <Dialog open={open} onOpenChange={setOpen}>
-        <DialogContent className="max-h-[90vh] overflow-hidden sm:max-w-3xl">
+        <DialogContent className="flex max-h-[90vh] flex-col overflow-hidden sm:max-w-3xl">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
               <Sparkles className="h-5 w-5 text-primary" />
@@ -153,7 +152,7 @@ export function AiAssistantDialog({
             <DialogDescription>{description}</DialogDescription>
           </DialogHeader>
 
-          <div className="space-y-4">
+          <div className="flex min-h-0 flex-1 flex-col gap-4 overflow-hidden">
             <div className="rounded-xl border border-border bg-muted/20 p-4">
               <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
                 AI Prompt
@@ -197,7 +196,7 @@ export function AiAssistantDialog({
                 </div>
               </div>
             ) : response ? (
-              <ScrollArea className="max-h-[48vh] rounded-xl border border-border bg-card">
+              <div className="min-h-0 flex-1 overflow-y-auto rounded-xl border border-border bg-card">
                 <div className="space-y-5 p-5">
                   <div className="space-y-2">
                     <div className="flex flex-wrap items-center justify-between gap-3">
@@ -218,7 +217,7 @@ export function AiAssistantDialog({
                     {response.disclaimer}
                   </div>
                 </div>
-              </ScrollArea>
+              </div>
             ) : (
               <div className="rounded-xl border border-dashed border-border p-8 text-center text-sm text-muted-foreground">
                 Write a prompt or use the default page question, then generate an AI insight.
