@@ -716,3 +716,4 @@ Yeh file har code, file, architecture, command, API, workflow ya config change k
 - `gpt-5-mini` compatibility ke liye AI requests se unsupported `temperature` parameter hataaya gaya
 - AI assistant aur prescription extraction response parsing ko harden kiya gaya taaki raw/fenced JSON safely parse ho sake
 - AI dialog layout fix ki gayi taaki long insights modal ke andar properly scroll ho sake
+- default general AI model ko `gpt-4o-mini` par shift kiya gaya

@@ -12,7 +12,7 @@ env = environ.Env(
     CSRF_TRUSTED_ORIGINS=(list, []),
     CORS_ALLOW_ALL_ORIGINS=(bool, True),
     OPENAI_API_KEY=(str, ""),
-    OPENAI_MODEL=(str, "gpt-5-mini"),
+    OPENAI_MODEL=(str, "gpt-4o-mini"),
     OPENAI_VISION_MODEL=(str, "gpt-4o-mini"),
 )
 environ.Env.read_env(BASE_DIR / ".env")
