@@ -2,7 +2,8 @@ import { cn } from '@/lib/utils';
 import { Badge } from '@/components/ui/badge';
 
 type StatusType = 'taken' | 'skipped' | 'missed' | 'snoozed' | 'active' | 'inactive' | 'pending' |
-  'paused' | 'completed' | 'discontinued' | 'uploaded' | 'under_review' | 'processed' | 'revoked';
+  'paused' | 'completed' | 'discontinued' | 'uploaded' | 'under_review' | 'processed' | 'revoked' |
+  'reviewed' | 'needs_clarification';
 
 const statusConfig: Record<StatusType, { label: string; className: string }> = {
   taken: { label: 'Taken', className: 'bg-success/10 text-success border-success/20' },
@@ -19,6 +20,8 @@ const statusConfig: Record<StatusType, { label: string; className: string }> = {
   under_review: { label: 'Under Review', className: 'bg-warning/10 text-warning border-warning/20' },
   processed: { label: 'Processed', className: 'bg-success/10 text-success border-success/20' },
   revoked: { label: 'Revoked', className: 'bg-destructive/10 text-destructive border-destructive/20' },
+  reviewed: { label: 'Reviewed', className: 'bg-success/10 text-success border-success/20' },
+  needs_clarification: { label: 'Needs Clarification', className: 'bg-warning/10 text-warning border-warning/20' },
 };
 
 export function StatusBadge({ status, className }: { status: StatusType; className?: string }) {

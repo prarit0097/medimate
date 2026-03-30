@@ -79,7 +79,7 @@ This scaffold is aligned to the MVP slice from the planning document:
 
 ## Frontend note
 
-The imported care portal is now part of this repo. Authentication is wired to the backend, but several dashboard/detail screens still use temporary mock data while API migration continues.
+The imported care portal is now part of this repo. Authentication plus the Patients list/create/detail flow are wired to the backend. Several other dashboard/detail screens still use temporary mock data while API migration continues.
 
 ## Suggested next build steps
 

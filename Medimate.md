@@ -38,6 +38,7 @@ Current codebase ek Django + DRF backend scaffold hai jisme:
 - adherence/refill dashboard summary
 - OpenAPI schema and Swagger docs
 - frontend auth wiring to backend
+- frontend patients list, add-patient flow, and patient detail wired to backend
 
 ## Who Uses the App
 
@@ -326,6 +327,10 @@ Code inside `common/views.py`:
 - shared frontend TypeScript types
 - user, patient, medication, dose log, dashboard aur auth payload shapes define karta hai
 
+`/frontend/src/lib/patient-utils.ts`
+- patient-related frontend helper functions
+- conditions parsing, initials, adherence score, refill risk, age aur file-name formatting handle karta hai
+
 `/frontend/src/lib/mock-data.ts`
 - temporary mock records
 - jo frontend pages abhi live backend se wire nahi hui hain, unke liye placeholder data deta hai
@@ -333,7 +338,9 @@ Code inside `common/views.py`:
 `/frontend/src/pages/*.tsx`
 - main route-level pages
 - login/register backend-ready hain
-- dashboard, patients, medications, prescriptions, reports aur related screens abhi mock-data driven hain
+- `Patients.tsx` live patient list aur create dialog backend se chalata hai
+- `PatientDetail.tsx` live patient profile, medications, logs, prescriptions aur care-team data backend se load karta hai
+- dashboard, medications, prescriptions list, reports aur related remaining screens abhi mock-data driven hain
 
 `/frontend/src/components/layout/*`
 - authenticated app shell, sidebar aur topbar components
@@ -550,7 +557,7 @@ Abhi project mein ye cheezein baaki hain:
 - prescription OCR processing pipeline
 - Celery reminder scheduler
 - strong role-based permission system
-- frontend data pages ko live backend APIs par migrate karna
+- remaining frontend data pages ko live backend APIs par migrate karna
 - Flutter app
 - ABDM/ABHA integration
 
@@ -571,3 +578,5 @@ Yeh file har code, file, architecture, command, API, workflow ya config change k
 - root `/` landing page add ki gayi taaki browser par empty-path 404 na aaye
 - external Lovable frontend repo import karke `frontend/` workspace add ki gayi
 - frontend auth backend se wire kiya gaya aur Vite proxy/env config add ki gayi
+- frontend Patients page ko live API list/create flow par migrate kiya gaya
+- frontend Patient Detail page ko live backend data par migrate kiya gaya
