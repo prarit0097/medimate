@@ -1,5 +1,6 @@
 from django.shortcuts import get_object_or_404
-from rest_framework import viewsets
+from rest_framework import status, viewsets
+from rest_framework.decorators import action
 from rest_framework.parsers import FormParser, JSONParser, MultiPartParser
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
@@ -11,6 +12,12 @@ from .models import (
     Medication,
     PrescriptionUpload,
     ProviderAccess,
+)
+from .prescription_ai import (
+    PrescriptionAIError,
+    PrescriptionAIConfigurationError,
+    create_medications_from_extraction,
+    extract_prescription_with_ai,
 )
 from .serializers import (
     CaregiverRelationshipSerializer,
@@ -78,6 +85,44 @@ class PrescriptionUploadViewSet(viewsets.ModelViewSet):
 
     def perform_create(self, serializer):
         serializer.save(uploaded_by=self.request.user)
+
+    @action(detail=True, methods=["post"], url_path="extract-ai")
+    def extract_ai(self, request, pk=None):
+        prescription = self.get_object()
+        try:
+            updated_prescription = extract_prescription_with_ai(prescription)
+        except PrescriptionAIConfigurationError as exc:
+            return Response(
+                {"detail": str(exc)},
+                status=status.HTTP_503_SERVICE_UNAVAILABLE,
+            )
+        except PrescriptionAIError as exc:
+            return Response(
+                {"detail": str(exc)},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        serializer = self.get_serializer(updated_prescription)
+        return Response(serializer.data)
+
+    @action(detail=True, methods=["post"], url_path="create-medications")
+    def create_medications(self, request, pk=None):
+        prescription = self.get_object()
+        try:
+            result = create_medications_from_extraction(prescription, request.user)
+        except PrescriptionAIError as exc:
+            return Response(
+                {"detail": str(exc)},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        return Response(
+            {
+                "detail": "Medication drafts created from prescription extraction.",
+                **result,
+            },
+            status=status.HTTP_201_CREATED if result["created_count"] else status.HTTP_200_OK,
+        )
 
 
 class MedicationViewSet(viewsets.ModelViewSet):

@@ -13,6 +13,7 @@ env = environ.Env(
     CORS_ALLOW_ALL_ORIGINS=(bool, True),
     OPENAI_API_KEY=(str, ""),
     OPENAI_MODEL=(str, "gpt-5-mini"),
+    OPENAI_VISION_MODEL=(str, "gpt-4o-mini"),
 )
 environ.Env.read_env(BASE_DIR / ".env")
 
@@ -84,6 +85,7 @@ LANGUAGE_CODE = "en-us"
 TIME_ZONE = env("TIME_ZONE", default="Asia/Kolkata")
 OPENAI_API_KEY = env("OPENAI_API_KEY")
 OPENAI_MODEL = env("OPENAI_MODEL")
+OPENAI_VISION_MODEL = env("OPENAI_VISION_MODEL")
 
 USE_I18N = True
 USE_TZ = True

@@ -11,6 +11,7 @@ Frontend workspace for the MediMate project. This is a Vite + React + TypeScript
 - top-bar bell is wired to live notification items and browser-notification permission flow
 - top-bar global MediMate AI assistant is wired to backend AI endpoints
 - dashboard, patients, patient detail, medications, prescriptions, dose logs, caregivers, provider access, reports, and settings now have page-aware AI actions
+- prescriptions page can run AI extraction on uploaded files and create medication drafts from extracted data
 - API base defaults to `/api/v1`
 - Vite dev server proxies `/api/*` requests to `http://127.0.0.1:8000`
 - top-bar global search is still a placeholder
@@ -42,7 +43,7 @@ cd E:\coding\MediMate
 - `src/pages/Patients.tsx`: live patients listing and create-patient dialog
 - `src/pages/PatientDetail.tsx`: live patient profile detail view
 - `src/pages/Medications.tsx`: live medications list and create flow
-- `src/pages/Prescriptions.tsx`: live prescription list and upload flow
+- `src/pages/Prescriptions.tsx`: live prescription list, upload flow, AI extraction, and medication-draft creation
 - `src/pages/DoseLogs.tsx`: live dose log list, create flow, and CSV export
 - `src/pages/Caregivers.tsx`: live caregiver relationship management
 - `src/pages/ProviderAccess.tsx`: live provider access management

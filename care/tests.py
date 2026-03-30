@@ -1,12 +1,14 @@
 from datetime import timedelta
+from unittest.mock import patch
 
+from django.core.files.uploadedfile import SimpleUploadedFile
 from django.utils import timezone
 from rest_framework import status
 from rest_framework.test import APITestCase
 
 from accounts.models import User
 
-from .models import DoseLog, Medication, Patient
+from .models import DoseLog, Medication, Patient, PrescriptionUpload
 
 
 class CareApiTests(APITestCase):
@@ -102,3 +104,84 @@ class CareApiTests(APITestCase):
         self.assertEqual(dashboard_response.status_code, status.HTTP_200_OK)
         self.assertEqual(dashboard_response.data["dashboard"]["adherence_score"], 50.0)
         self.assertEqual(dashboard_response.data["dashboard"]["active_medications"], 1)
+
+    @patch("care.views.extract_prescription_with_ai")
+    def test_prescription_ai_extraction_and_medication_creation(self, mock_extract):
+        patient = Patient.objects.create(
+            created_by=self.user,
+            full_name="Anita Devi",
+            preferred_language="hi",
+            timezone="Asia/Kolkata",
+        )
+        prescription = PrescriptionUpload.objects.create(
+            patient=patient,
+            uploaded_by=self.user,
+            image=SimpleUploadedFile(
+                "prescription.pdf",
+                b"%PDF-1.4 mock prescription",
+                content_type="application/pdf",
+            ),
+        )
+
+        def fake_extract(target):
+            target.ocr_text = "Tab Metformin 500 mg BD after meals"
+            target.extracted_payload = {
+                "summary": "One diabetes medication extracted.",
+                "confidence": "high",
+                "needs_clarification": False,
+                "clarifications": [],
+                "medications": [
+                    {
+                        "name": "Metformin",
+                        "generic_name": "Metformin",
+                        "strength": "500 mg",
+                        "dosage_form": "tablet",
+                        "route": "oral",
+                        "indication": "Diabetes",
+                        "instructions": "Take after meals",
+                        "meal_relation": "after_meal",
+                        "is_high_risk": False,
+                        "reminders": [
+                            {
+                                "label": "Morning dose",
+                                "time_of_day": "08:00:00",
+                                "dose_quantity": "1",
+                                "recurrence_type": "daily",
+                                "weekdays": [],
+                                "notes": "",
+                            }
+                        ],
+                    }
+                ],
+            }
+            target.review_notes = "AI summary: One diabetes medication extracted."
+            target.status = PrescriptionUpload.ReviewStatus.REVIEWED
+            target.save(
+                update_fields=[
+                    "ocr_text",
+                    "extracted_payload",
+                    "review_notes",
+                    "status",
+                    "updated_at",
+                ]
+            )
+            return target
+
+        mock_extract.side_effect = fake_extract
+
+        extract_response = self.client.post(
+            f"/api/v1/prescriptions/{prescription.id}/extract-ai/"
+        )
+        self.assertEqual(extract_response.status_code, status.HTTP_200_OK)
+        self.assertEqual(extract_response.data["status"], "reviewed")
+        self.assertEqual(extract_response.data["extracted_medications_count"], 1)
+
+        create_response = self.client.post(
+            f"/api/v1/prescriptions/{prescription.id}/create-medications/"
+        )
+        self.assertEqual(create_response.status_code, status.HTTP_201_CREATED)
+        self.assertEqual(create_response.data["created_count"], 1)
+        self.assertEqual(
+            Medication.objects.filter(prescription=prescription, patient=patient).count(),
+            1,
+        )

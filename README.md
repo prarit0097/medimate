@@ -13,6 +13,7 @@ MediMate is an API-first medication adherence platform. This repository now cont
 - Provider access records for doctor/pharmacist visibility
 - Adherence and refill summary endpoint for dashboards
 - OpenAI-backed AI assistant endpoints for workspace, patient, medication, prescription, adherence, and report summaries
+- AI prescription extraction and medication draft creation flow
 - OpenAPI schema and Swagger docs
 - Integrated care-portal frontend workspace
 
@@ -66,6 +67,8 @@ Backend API/docs: `http://127.0.0.1:8000`
 - `GET|POST /api/v1/caregiver-links/`
 - `GET|POST /api/v1/provider-access/`
 - `GET|POST /api/v1/prescriptions/`
+- `POST /api/v1/prescriptions/<id>/extract-ai/`
+- `POST /api/v1/prescriptions/<id>/create-medications/`
 - `GET|POST /api/v1/medications/`
 - `GET|POST /api/v1/dose-logs/`
 - `GET /api/v1/dashboard/patients/<patient_id>/`
@@ -86,13 +89,13 @@ This scaffold is aligned to the MVP slice from the planning document:
 
 ## Frontend note
 
-The imported care portal is now part of this repo. Authentication, dashboard, patients, medications, prescriptions, dose logs, caregivers, provider access, reports, settings, top-bar notifications, and AI assistant entry points are wired to the backend.
+The imported care portal is now part of this repo. Authentication, dashboard, patients, medications, prescriptions, dose logs, caregivers, provider access, reports, settings, top-bar notifications, and AI assistant entry points are wired to the backend. Prescription uploads can now be AI-extracted into medication drafts.
 
 ## Suggested next build steps
 
 1. Add richer edit/delete flows and deeper workflow actions across the frontend screens.
 2. Add WhatsApp and IVR event ingestion endpoints.
-3. Add OCR extraction workflow for `PrescriptionUpload`.
+3. Add automatic human-review queues or approval workflows on top of the AI prescription extraction flow.
 4. Split patient/caregiver/provider permissions into stronger role-based policies.
 5. Add task scheduling with Celery + Redis for reminders and escalation.
 6. Add ABDM/ABHA integration behind a dedicated interoperability app.

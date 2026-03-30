@@ -31,6 +31,7 @@ import { fileNameFromPath } from "@/lib/patient-utils";
 import { apiClient } from "@/services/api";
 import type {
   PatientRecord,
+  PrescriptionExtractionPayload,
   PrescriptionUploadCreatePayload,
   PrescriptionUploadRecord,
 } from "@/types";
@@ -47,6 +48,13 @@ const defaultFormState: PrescriptionFormState = {
   file: null,
 };
 
+interface MedicationCreationResponse {
+  detail: string;
+  created_count: number;
+  skipped_count: number;
+  created_medication_ids: string[];
+}
+
 function backendAssetUrl(path: string) {
   if (!path) {
     return "#";
@@ -59,10 +67,22 @@ function backendAssetUrl(path: string) {
   return `http://127.0.0.1:8000${path}`;
 }
 
+function getExtractionPayload(
+  prescription: PrescriptionUploadRecord,
+): PrescriptionExtractionPayload | null {
+  const payload = prescription.extracted_payload as PrescriptionExtractionPayload;
+  if (!payload || typeof payload !== "object") {
+    return null;
+  }
+  return payload;
+}
+
 export default function Prescriptions() {
   const [search, setSearch] = useState("");
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [form, setForm] = useState<PrescriptionFormState>(defaultFormState);
+  const [extractingId, setExtractingId] = useState<string | null>(null);
+  const [creatingMedicationId, setCreatingMedicationId] = useState<string | null>(null);
   const deferredSearch = useDeferredValue(search);
   const fileInputRef = useRef<HTMLInputElement | null>(null);
   const queryClient = useQueryClient();
@@ -110,6 +130,64 @@ export default function Prescriptions() {
         description: error.message,
         variant: "destructive",
       });
+    },
+  });
+
+  const extractMutation = useMutation({
+    mutationFn: async (prescriptionId: string) => {
+      setExtractingId(prescriptionId);
+      return apiClient.post<PrescriptionUploadRecord>(
+        `/prescriptions/${prescriptionId}/extract-ai/`,
+      );
+    },
+    onSuccess: (prescription) => {
+      queryClient.invalidateQueries({ queryKey: ["prescriptions"] });
+      toast({
+        title: "AI extraction complete",
+        description: `${fileNameFromPath(
+          prescription.image,
+        )} was processed and medication drafts are ready for review.`,
+      });
+    },
+    onError: (error: Error) => {
+      toast({
+        title: "Could not extract prescription",
+        description: error.message,
+        variant: "destructive",
+      });
+    },
+    onSettled: () => {
+      setExtractingId(null);
+    },
+  });
+
+  const createMedicationsMutation = useMutation({
+    mutationFn: async (prescriptionId: string) => {
+      setCreatingMedicationId(prescriptionId);
+      return apiClient.post<MedicationCreationResponse>(
+        `/prescriptions/${prescriptionId}/create-medications/`,
+      );
+    },
+    onSuccess: (result) => {
+      queryClient.invalidateQueries({ queryKey: ["medications"] });
+      queryClient.invalidateQueries({ queryKey: ["prescriptions"] });
+      toast({
+        title: "Medication drafts created",
+        description:
+          result.created_count > 0
+            ? `${result.created_count} medication records were created from the extracted prescription.`
+            : "No new medications were created because matching drafts already exist.",
+      });
+    },
+    onError: (error: Error) => {
+      toast({
+        title: "Could not create medications",
+        description: error.message,
+        variant: "destructive",
+      });
+    },
+    onSettled: () => {
+      setCreatingMedicationId(null);
     },
   });
 
@@ -263,11 +341,16 @@ export default function Prescriptions() {
         />
       ) : (
         <div className="space-y-3">
-          {filteredPrescriptions.map((prescription) => (
-            <div
-              key={prescription.id}
-              className="flex items-center gap-4 rounded-xl border border-border bg-card p-5 transition-shadow hover:shadow-sm"
-            >
+          {filteredPrescriptions.map((prescription) => {
+            const extraction = getExtractionPayload(prescription);
+            const extractedMedications = extraction?.medications || [];
+            const clarifications = extraction?.clarifications || [];
+
+            return (
+              <div
+                key={prescription.id}
+                className="flex items-start gap-4 rounded-xl border border-border bg-card p-5 transition-shadow hover:shadow-sm"
+              >
               <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-muted">
                 <FileText className="h-6 w-6 text-muted-foreground" />
               </div>
@@ -287,14 +370,70 @@ export default function Prescriptions() {
                     {prescription.review_notes}
                   </p>
                 )}
+                {extraction?.summary && (
+                  <p className="mt-2 text-xs text-foreground/85">
+                    AI: {extraction.summary}
+                  </p>
+                )}
+                {(prescription.extracted_medications_count || extractedMedications.length > 0) && (
+                  <p className="mt-2 text-xs text-muted-foreground">
+                    {prescription.extracted_medications_count || extractedMedications.length} extracted medication
+                    {(prescription.extracted_medications_count || extractedMedications.length) === 1 ? "" : "s"}
+                    {prescription.extraction_confidence
+                      ? ` · ${prescription.extraction_confidence} confidence`
+                      : ""}
+                  </p>
+                )}
+                {clarifications.length > 0 && (
+                  <div className="mt-2 flex flex-wrap gap-1.5">
+                    {clarifications.slice(0, 2).map((item) => (
+                      <span
+                        key={item}
+                        className="rounded-full bg-warning/10 px-2 py-0.5 text-[11px] text-warning"
+                      >
+                        {item}
+                      </span>
+                    ))}
+                  </div>
+                )}
               </div>
-              <StatusBadge status={prescription.status} />
-              <div className="shrink-0 text-right">
+              <div className="shrink-0 space-y-2 text-right">
+                <div className="flex justify-end">
+                  <StatusBadge status={prescription.status} />
+                </div>
                 <p className="text-sm text-muted-foreground">
                   {new Date(prescription.created_at).toLocaleDateString()}
                 </p>
+                <div className="flex flex-wrap justify-end gap-2">
+                  <Button
+                    type="button"
+                    size="sm"
+                    variant="outline"
+                    disabled={extractMutation.isPending}
+                    onClick={() => extractMutation.mutate(prescription.id)}
+                  >
+                    {extractingId === prescription.id && (
+                      <Loader2 className="mr-2 h-3.5 w-3.5 animate-spin" />
+                    )}
+                    AI Extract
+                  </Button>
+                  <Button
+                    type="button"
+                    size="sm"
+                    disabled={
+                      createMedicationsMutation.isPending ||
+                      (prescription.extracted_medications_count || extractedMedications.length) === 0
+                    }
+                    onClick={() => createMedicationsMutation.mutate(prescription.id)}
+                  >
+                    {creatingMedicationId === prescription.id && (
+                      <Loader2 className="mr-2 h-3.5 w-3.5 animate-spin" />
+                    )}
+                    Create Meds
+                  </Button>
+                </div>
                 <a
-                  className="text-sm font-medium text-primary hover:underline"
+                  className="block text-sm font-medium text-primary hover:underline"
                   href={backendAssetUrl(prescription.image)}
                   target="_blank"
                   rel="noreferrer"
@@ -302,8 +441,9 @@ export default function Prescriptions() {
                   Open
                 </a>
               </div>
-            </div>
-          ))}
+              </div>
+            );
+          })}
         </div>
       )}
 

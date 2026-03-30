@@ -29,6 +29,7 @@ Current codebase ek Django + DRF backend scaffold hai jisme:
 - integrated `frontend/` Vite + React care portal workspace
 - server-side OpenAI configuration support via `.env`
 - OpenAI-backed AI assistant endpoints
+- AI prescription extraction and medication draft creation flow
 - JWT authentication
 - profile update, password change, and user-directory auth endpoints
 - custom email-based user model
@@ -157,6 +158,7 @@ Project `.env` file use karta hai. Current supported values:
 - `TIME_ZONE`
 - `OPENAI_API_KEY`
 - `OPENAI_MODEL`
+- `OPENAI_VISION_MODEL`
 
 ## Main API Endpoints
 
@@ -176,6 +178,8 @@ Project `.env` file use karta hai. Current supported values:
 - `GET|POST /api/v1/caregiver-links/`
 - `GET|POST /api/v1/provider-access/`
 - `GET|POST /api/v1/prescriptions/`
+- `POST /api/v1/prescriptions/<prescription_id>/extract-ai/`
+- `POST /api/v1/prescriptions/<prescription_id>/create-medications/`
 - `GET|POST /api/v1/medications/`
 - `GET|POST /api/v1/dose-logs/`
 - `GET /api/v1/dashboard/patients/<patient_id>/`
@@ -252,7 +256,8 @@ Important settings inside `config/settings.py`:
 - `SIMPLE_JWT`: token lifetime configuration
 - `SPECTACULAR_SETTINGS`: API docs configuration
 - `TEMPLATES["DIRS"]`: project-level `templates/` folder load karta hai
-- `OPENAI_API_KEY` / `OPENAI_MODEL`: AI assistant backend configuration
+- `OPENAI_API_KEY` / `OPENAI_MODEL`: general AI assistant backend configuration
+- `OPENAI_VISION_MODEL`: prescription extraction ke liye vision-capable model configuration
 
 `/config/urls.py`
 - complete URL router
@@ -380,7 +385,7 @@ Code inside `common/views.py`:
 - `Patients.tsx` live patient list aur create dialog backend se chalata hai
 - `PatientDetail.tsx` live patient profile, medications, logs, prescriptions aur care-team data backend se load karta hai
 - `Medications.tsx` live medication list, reminder summary aur add-medication dialog provide karta hai
-- `Prescriptions.tsx` live prescription list aur upload dialog provide karta hai
+- `Prescriptions.tsx` live prescription list, upload dialog, AI extraction, aur medication-draft creation provide karta hai
 - `DoseLogs.tsx` live activity list, stats, add-log dialog aur CSV export provide karta hai
 - `Caregivers.tsx` live caregiver relationship list aur add-caregiver dialog provide karta hai
 - `ProviderAccess.tsx` live provider access list aur add-provider dialog provide karta hai
@@ -537,7 +542,7 @@ Code inside `care/models.py`:
 - `ProviderAccess`
   - doctor/pharmacist/nurse/care coordinator access track karta hai
 - `PrescriptionUpload`
-  - uploaded prescription image aur OCR/review related data rakhta hai
+  - uploaded prescription file aur AI extraction/review related data rakhta hai
 - `Medication`
   - medicine record store karta hai
   - stock, meal relation, high risk, status fields support karta hai
@@ -587,6 +592,12 @@ Code inside `care/services.py`:
 - `adherence_summary_for_patient`
   - patient ke recent dose logs se adherence score aur refill summary banata hai
 
+`/care/prescription_ai.py`
+- prescription OCR/extraction ka AI service layer
+- uploaded PDF/image ko OpenAI vision-capable model par bhejta hai
+- structured medication drafts, OCR text, summary, aur clarification flags normalize karta hai
+- extracted payload se actual `Medication` aur `MedicationReminder` drafts create kar sakta hai
+
 `/care/tests.py`
 - patient create, medication create aur dashboard summary flow test karta hai
 
@@ -621,6 +632,10 @@ Code inside `care/views.py`:
 `/care/migrations/0001_initial.py`
 - all initial care domain tables create karta hai
 
+`/care/migrations/0002_alter_prescriptionupload_image.py`
+- prescription upload field ko `FileField` par shift karta hai
+- PDF uploads ko support karne ke liye migration add karta hai
+
 ## Generated Files
 
 `/__pycache__/...`
@@ -631,13 +646,14 @@ Code inside `care/views.py`:
 
 ## Current Testing Coverage
 
-Abhi 7 backend tests aur 1 frontend smoke test run hote hain:
+Abhi 8 backend tests aur 1 frontend smoke test run hote hain:
 
 - root landing page test
 - health check test
 - auth register/login/me flow test
 - auth profile update, user directory, aur password change flow test
 - patient/medication/dashboard integration test
+- prescription AI extraction and medication-draft creation flow test
 - AI status endpoint test
 - AI assist endpoint contract test
 - frontend Vitest example smoke test
@@ -648,7 +664,7 @@ Abhi project mein ye cheezein baaki hain:
 
 - WhatsApp integration
 - IVR integration
-- prescription OCR processing pipeline
+- AI extraction ke upar approval queue / pharmacist review workflow abhi basic hai
 - Celery reminder scheduler
 - AI features ko actual OpenAI responses ke liye valid `OPENAI_API_KEY` chahiye
 - AI guidance workflow support hai, clinical decision replacement nahi
@@ -687,8 +703,12 @@ Yeh file har code, file, architecture, command, API, workflow ya config change k
 - frontend dashboard ko live backend data, schedule actions, care network counts, aur responsive widgets ke saath rebuild kiya gaya
 - top-bar notification bell ko live in-app feed, unread count, settings-synced preferences, aur browser notification permission ke saath enable kiya gaya
 - OpenAI Python SDK dependency add ki gayi
-- `.env` aur `.env.example` mein `OPENAI_API_KEY` aur `OPENAI_MODEL` placeholders add kiye gaye
+- `.env` aur `.env.example` mein `OPENAI_API_KEY`, `OPENAI_MODEL`, aur `OPENAI_VISION_MODEL` placeholders add kiye gaye
 - new `ai_assistant` Django app add ki gayi with AI status aur assist endpoints
 - backend workspace-aware AI context builder aur OpenAI Responses API integration add ki gayi
 - reusable frontend AI dialog add karke global top-bar assistant enable kiya gaya
 - dashboard, patients, patient detail, medications, prescriptions, dose logs, caregivers, provider access, reports, aur settings pages par AI actions add kiye gaye
+- prescription uploads ko `FileField` support diya gaya taaki PDF files bhi accept ho sake
+- new `care/prescription_ai.py` extraction service add ki gayi
+- prescription AI extraction endpoint aur medication draft creation endpoint add kiye gaye
+- prescriptions page par `AI Extract` aur `Create Meds` workflow add kiya gaya

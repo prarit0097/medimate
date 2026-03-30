@@ -124,6 +124,8 @@ class ProviderAccessSerializer(serializers.ModelSerializer):
 
 class PrescriptionUploadSerializer(serializers.ModelSerializer):
     uploaded_by_detail = UserSerializer(source="uploaded_by", read_only=True)
+    extracted_medications_count = serializers.SerializerMethodField()
+    extraction_confidence = serializers.SerializerMethodField()
 
     class Meta:
         model = PrescriptionUpload
@@ -136,6 +138,8 @@ class PrescriptionUploadSerializer(serializers.ModelSerializer):
             "status",
             "ocr_text",
             "extracted_payload",
+            "extracted_medications_count",
+            "extraction_confidence",
             "review_notes",
             "created_at",
             "updated_at",
@@ -152,6 +156,12 @@ class PrescriptionUploadSerializer(serializers.ModelSerializer):
         if not user_can_access_patient(self.context["request"].user, value):
             raise serializers.ValidationError("You do not have access to this patient.")
         return value
+
+    def get_extracted_medications_count(self, obj):
+        return len((obj.extracted_payload or {}).get("medications") or [])
+
+    def get_extraction_confidence(self, obj):
+        return (obj.extracted_payload or {}).get("confidence")
 
 
 class MedicationReminderSerializer(serializers.ModelSerializer):
@@ -303,4 +313,3 @@ class DoseLogSerializer(serializers.ModelSerializer):
             logged_by=self.context["request"].user,
             **validated_data,
         )
-

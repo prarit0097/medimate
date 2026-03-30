@@ -222,7 +222,9 @@ export interface PrescriptionUploadRecord {
   image: string;
   status: "pending" | "reviewed" | "needs_clarification";
   ocr_text: string;
-  extracted_payload: Record<string, unknown>;
+  extracted_payload: PrescriptionExtractionPayload | Record<string, unknown>;
+  extracted_medications_count?: number;
+  extraction_confidence?: "high" | "medium" | "low" | null;
   review_notes: string;
   created_at: string;
   updated_at: string;
@@ -232,6 +234,36 @@ export interface PrescriptionUploadCreatePayload {
   patient: string;
   status?: "pending" | "reviewed" | "needs_clarification";
   review_notes?: string;
+}
+
+export interface PrescriptionExtractedReminder {
+  label: string;
+  time_of_day?: string | null;
+  dose_quantity: string;
+  recurrence_type: "daily" | "specific_days" | "weekly" | "alternate_days" | "prn";
+  weekdays: number[];
+  notes: string;
+}
+
+export interface PrescriptionExtractedMedication {
+  name: string;
+  generic_name: string;
+  strength: string;
+  dosage_form: string;
+  route: string;
+  indication: string;
+  instructions: string;
+  meal_relation: "before_meal" | "after_meal" | "with_meal" | "independent";
+  is_high_risk: boolean;
+  reminders: PrescriptionExtractedReminder[];
+}
+
+export interface PrescriptionExtractionPayload {
+  summary?: string;
+  confidence?: "high" | "medium" | "low";
+  needs_clarification?: boolean;
+  clarifications?: string[];
+  medications?: PrescriptionExtractedMedication[];
 }
 
 export interface CaregiverRelationshipRecord {

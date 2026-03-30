@@ -151,7 +151,7 @@ class PrescriptionUpload(TimeStampedModel):
         on_delete=models.PROTECT,
         related_name="uploaded_prescriptions",
     )
-    image = models.ImageField(upload_to="prescriptions/%Y/%m/%d/")
+    image = models.FileField(upload_to="prescriptions/%Y/%m/%d/")
     status = models.CharField(
         max_length=32,
         choices=ReviewStatus.choices,
