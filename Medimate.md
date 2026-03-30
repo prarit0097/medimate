@@ -25,6 +25,7 @@ Project isliye create kiya gaya hai kyunki chronic patients ko medicines regular
 
 Current codebase ek Django + DRF backend scaffold hai jisme:
 
+- root landing page at `/`
 - JWT authentication
 - custom email-based user model
 - patient records
@@ -109,6 +110,7 @@ python manage.py runserver
 
 ### API documentation
 
+- Landing page: `http://127.0.0.1:8000/`
 - Swagger UI: `http://127.0.0.1:8000/api/docs/`
 - OpenAPI Schema: `http://127.0.0.1:8000/api/schema/`
 - Health Check: `http://127.0.0.1:8000/api/health/`
@@ -195,6 +197,7 @@ Project `.env` file use karta hai. Current supported values:
 - installed apps define karta hai
 - custom user model set karta hai
 - DRF, JWT, CORS, media/static, env config define karta hai
+- root `templates/` folder bhi load karta hai
 
 Important settings inside `config/settings.py`:
 - `INSTALLED_APPS`: Django apps plus `accounts`, `care`, `common`, DRF-related packages
@@ -204,10 +207,11 @@ Important settings inside `config/settings.py`:
 - `REST_FRAMEWORK`: authentication, filters, pagination, schema settings
 - `SIMPLE_JWT`: token lifetime configuration
 - `SPECTACULAR_SETTINGS`: API docs configuration
+- `TEMPLATES["DIRS"]`: project-level `templates/` folder load karta hai
 
 `/config/urls.py`
 - complete URL router
-- admin, health check, schema/docs, auth routes aur care routes ko wire karta hai
+- root landing page, admin, health check, schema/docs, auth routes aur care routes ko wire karta hai
 
 `/config/wsgi.py`
 - WSGI entry point
@@ -234,17 +238,24 @@ Code inside `common/models.py`:
   - isse care app ke multiple models inherit karte hain
 
 `/common/tests.py`
-- health endpoint test karta hai
+- root landing page aur health endpoint test karta hai
 
 `/common/views.py`
 - shared light utility views rakhta hai
 
 Code inside `common/views.py`:
+- `HomePageView`: root landing page render karta hai
+  - browser ke liye quick links aur status page dikhata hai
 - `HealthCheckView`: `/api/health/` endpoint
   - service up hone ka simple JSON response deta hai
 
 `/common/migrations/__init__.py`
 - migrations package marker
+
+`/templates/home.html`
+- root URL ka landing page template
+- browser par docs, admin, health aur schema links dikhata hai
+- API-first build ko readable homepage ke form mein present karta hai
 
 ### Accounts app
 
@@ -429,8 +440,9 @@ Code inside `care/views.py`:
 
 ## Current Testing Coverage
 
-Abhi 3 basic tests hain:
+Abhi 4 basic tests hain:
 
+- root landing page test
 - health check test
 - auth register/login/me flow test
 - patient/medication/dashboard integration test
@@ -462,3 +474,4 @@ Yeh file har code, file, architecture, command, API, workflow ya config change k
 - run commands aur maintenance rule add kiye gaye
 - `agent.md` workflow file reference add ki gayi
 - local `.env` file generated Django secret key ke saath create ki gayi
+- root `/` landing page add ki gayi taaki browser par empty-path 404 na aaye
