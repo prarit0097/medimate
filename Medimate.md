@@ -344,6 +344,10 @@ Code inside `common/views.py`:
 - dashboard aggregation helper
 - patients, medications, reminders aur dose logs ko combine karke live dashboard data banata hai
 
+`/frontend/src/lib/notification-utils.ts`
+- notification preferences aur local-storage helpers
+- missed dose, refill, weekly summary, caregiver update, aur prescription notifications generate karta hai
+
 `/frontend/src/lib/export-utils.ts`
 - CSV export helper
 - dose logs aur reports export ko browser download mein convert karta hai
@@ -364,11 +368,12 @@ Code inside `common/views.py`:
 - `Caregivers.tsx` live caregiver relationship list aur add-caregiver dialog provide karta hai
 - `ProviderAccess.tsx` live provider access list aur add-provider dialog provide karta hai
 - `Reports.tsx` live summary cards, charts, refill tracking aur export/print actions provide karta hai
-- `Settings.tsx` live profile update, local notification preferences aur password-change flow provide karta hai
+- `Settings.tsx` live profile update, notification preferences, browser-notification permission, aur password-change flow provide karta hai
 - `Dashboard.tsx` live schedule, care network, refill alerts, recent activity, aur quick actions provide karta hai
 
 `/frontend/src/components/layout/*`
 - authenticated app shell, sidebar aur topbar components
+- `TopBar.tsx` live notification bell, unread count, dropdown feed, aur browser-notification enable flow handle karta hai
 
 `/frontend/src/components/common/*`
 - reusable display components like stats, rings, empty states, and badges
@@ -595,6 +600,7 @@ Abhi project mein ye cheezein baaki hain:
 - strong role-based permission system
 - top-bar global search abhi backend se wire nahi hai
 - edit/delete flows ka richer UX abhi missing hai for most newly-wired frontend pages
+- browser notifications app-open/in-browser mode tak limited hain; background push infra abhi nahi hai
 - Flutter app
 - ABDM/ABHA integration
 
@@ -624,3 +630,4 @@ Yeh file har code, file, architecture, command, API, workflow ya config change k
 - run commands ko `.venv` Python usage ke saath clarify kiya gaya
 - frontend browser-tab title aur meta branding ko `MediMate` par update kiya gaya
 - frontend dashboard ko live backend data, schedule actions, care network counts, aur responsive widgets ke saath rebuild kiya gaya
+- top-bar notification bell ko live in-app feed, unread count, settings-synced preferences, aur browser notification permission ke saath enable kiya gaya

@@ -8,6 +8,7 @@ Frontend workspace for the MediMate project. This is a Vite + React + TypeScript
 - patients list, add-patient flow, and patient detail page are wired to the Django backend
 - medications, prescriptions, dose logs, caregivers, provider access, reports, and settings are wired to the Django backend
 - dashboard is wired to live backend aggregates and schedule actions
+- top-bar bell is wired to live notification items and browser-notification permission flow
 - API base defaults to `/api/v1`
 - Vite dev server proxies `/api/*` requests to `http://127.0.0.1:8000`
 - top-bar global search is still a placeholder
@@ -47,6 +48,8 @@ cd E:\coding\MediMate
 - `src/pages/Settings.tsx`: live profile, notification, and password settings
 - `src/pages/Dashboard.tsx`: live dashboard summary, today schedule, refill alerts, and care network widgets
 - `src/lib/dashboard-utils.ts`: dashboard aggregation and scheduling helper
+- `src/lib/notification-utils.ts`: notification preferences, generated feed items, and storage helpers
 - `src/lib/export-utils.ts`: CSV download helper
 - `src/lib/mock-data.ts`: legacy sample data retained for reference
+- `src/components/layout/TopBar.tsx`: top-bar search shell and live notification center
 - `vite.config.ts`: dev server and proxy settings

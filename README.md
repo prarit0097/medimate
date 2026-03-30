@@ -81,7 +81,7 @@ This scaffold is aligned to the MVP slice from the planning document:
 
 ## Frontend note
 
-The imported care portal is now part of this repo. Authentication, dashboard, patients, medications, prescriptions, dose logs, caregivers, provider access, reports, and settings are wired to the backend.
+The imported care portal is now part of this repo. Authentication, dashboard, patients, medications, prescriptions, dose logs, caregivers, provider access, reports, settings, and top-bar notifications are wired to the backend.
 
 ## Suggested next build steps
 

@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { useMutation } from "@tanstack/react-query";
-import { Loader2 } from "lucide-react";
+import { BellRing, Loader2 } from "lucide-react";
 
 import { RoleBadge } from "@/components/common/Badges";
 import { Button } from "@/components/ui/button";
@@ -17,30 +17,20 @@ import { Switch } from "@/components/ui/switch";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
+import {
+  defaultNotificationPreferences,
+  loadNotificationPreferences,
+  saveNotificationPreferences,
+} from "@/lib/notification-utils";
 import { apiClient } from "@/services/api";
 import type { UpdateProfilePayload, User } from "@/types";
-
-interface NotificationPreferences {
-  missedDoseAlerts: boolean;
-  refillReminders: boolean;
-  weeklySummary: boolean;
-  caregiverUpdates: boolean;
-}
+import type { NotificationPreferences } from "@/lib/notification-utils";
 
 interface PasswordFormState {
   current_password: string;
   new_password: string;
   confirm_password: string;
 }
-
-const NOTIFICATION_STORAGE_KEY = "medimate_notification_preferences";
-
-const defaultNotifications: NotificationPreferences = {
-  missedDoseAlerts: true,
-  refillReminders: true,
-  weeklySummary: true,
-  caregiverUpdates: true,
-};
 
 const defaultPasswordState: PasswordFormState = {
   current_password: "",
@@ -58,9 +48,13 @@ export default function Settings() {
     timezone: "Asia/Kolkata",
   });
   const [notifications, setNotifications] =
-    useState<NotificationPreferences>(defaultNotifications);
+    useState<NotificationPreferences>(defaultNotificationPreferences);
   const [passwordForm, setPasswordForm] =
     useState<PasswordFormState>(defaultPasswordState);
+  const browserSupported = typeof window !== "undefined" && "Notification" in window;
+  const [browserPermission, setBrowserPermission] = useState<NotificationPermission | "unsupported">(
+    browserSupported ? Notification.permission : "unsupported",
+  );
 
   useEffect(() => {
     if (!user) {
@@ -76,17 +70,7 @@ export default function Settings() {
   }, [user]);
 
   useEffect(() => {
-    const stored = localStorage.getItem(NOTIFICATION_STORAGE_KEY);
-    if (!stored) {
-      return;
-    }
-
-    try {
-      const parsed = JSON.parse(stored) as NotificationPreferences;
-      setNotifications({ ...defaultNotifications, ...parsed });
-    } catch {
-      localStorage.removeItem(NOTIFICATION_STORAGE_KEY);
-    }
+    setNotifications(loadNotificationPreferences());
   }, []);
 
   const profileMutation = useMutation({
@@ -173,10 +157,44 @@ export default function Settings() {
   }
 
   function handleNotificationSave() {
-    localStorage.setItem(NOTIFICATION_STORAGE_KEY, JSON.stringify(notifications));
+    saveNotificationPreferences(notifications);
     toast({
       title: "Preferences saved",
-      description: "Notification settings are stored for this browser session.",
+      description: "Notification settings are now active across the web app.",
+    });
+  }
+
+  async function handleEnableBrowserNotifications() {
+    if (!browserSupported) {
+      toast({
+        title: "Browser notifications unavailable",
+        description: "This browser does not support the Notification API.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    if (browserPermission === "denied") {
+      toast({
+        title: "Notifications blocked",
+        description: "Allow notifications from browser site settings for localhost.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    const permission = await Notification.requestPermission();
+    setBrowserPermission(permission);
+    toast({
+      title:
+        permission === "granted"
+          ? "Browser notifications enabled"
+          : "Browser notifications not enabled",
+      description:
+        permission === "granted"
+          ? "Missed doses, refill alerts, and other new items can now reach the browser."
+          : "In-app notifications from the bell will continue to work.",
+      variant: permission === "granted" ? "default" : "destructive",
     });
   }
 
@@ -330,6 +348,34 @@ export default function Settings() {
         <TabsContent value="notifications">
           <div className="space-y-6 rounded-xl border border-border bg-card p-6">
             <h3 className="font-semibold">Notification Preferences</h3>
+            <div className="flex flex-col gap-4 rounded-xl border border-border bg-muted/20 p-4 sm:flex-row sm:items-center sm:justify-between">
+              <div className="flex items-start gap-3">
+                <div className="mt-0.5 flex h-10 w-10 items-center justify-center rounded-xl bg-primary/10 text-primary">
+                  <BellRing className="h-5 w-5" />
+                </div>
+                <div>
+                  <p className="font-medium">In-app and browser notifications</p>
+                  <p className="text-sm text-muted-foreground">
+                    Bell icon top-bar alerts always work. Browser notifications need explicit permission.
+                  </p>
+                  <p className="mt-1 text-xs text-muted-foreground">
+                    Status:{" "}
+                    {browserPermission === "granted"
+                      ? "Enabled"
+                      : browserPermission === "denied"
+                        ? "Blocked in browser"
+                        : browserPermission === "unsupported"
+                          ? "Not supported"
+                          : "Not enabled"}
+                  </p>
+                </div>
+              </div>
+              {browserPermission !== "granted" && browserPermission !== "unsupported" && (
+                <Button type="button" variant="outline" onClick={handleEnableBrowserNotifications}>
+                  Enable browser alerts
+                </Button>
+              )}
+            </div>
             <div className="space-y-4">
               {[
                 {
