@@ -2,6 +2,7 @@ import { useDeferredValue, useMemo, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Loader2, Pill, Plus, Search } from "lucide-react";
 
+import { AiAssistantDialog } from "@/components/ai/AiAssistantDialog";
 import { EmptyState } from "@/components/common/EmptyState";
 import { ErrorState } from "@/components/common/ErrorState";
 import { PageSkeleton } from "@/components/common/LoadingSkeleton";
@@ -319,14 +320,23 @@ export default function Medications() {
             View medication plans, reminder schedules, and refill risk.
           </p>
         </div>
-        <Button
-          type="button"
-          onClick={() => setIsDialogOpen(true)}
-          disabled={!patientsQuery.isLoading && patients.length === 0}
-        >
-          <Plus className="mr-2 h-4 w-4" />
-          Add Medication
-        </Button>
+        <div className="flex gap-2">
+          <AiAssistantDialog
+            surface="medications"
+            title="AI Medication Review"
+            description="Review medication schedules, refill exposure, and regimen clarity using the current workspace data."
+            triggerLabel="AI Review"
+            defaultQuestion="Review the medication plan and point out refill risks, instruction gaps, or follow-up actions."
+          />
+          <Button
+            type="button"
+            onClick={() => setIsDialogOpen(true)}
+            disabled={!patientsQuery.isLoading && patients.length === 0}
+          >
+            <Plus className="mr-2 h-4 w-4" />
+            Add Medication
+          </Button>
+        </div>
       </div>
 
       <div className="flex flex-col gap-3 sm:flex-row">

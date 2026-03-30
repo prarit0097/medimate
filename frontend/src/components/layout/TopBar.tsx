@@ -1,8 +1,18 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { Link } from "react-router-dom";
-import { AlertTriangle, Bell, CheckCircle2, FileText, Info, Search, Settings } from "lucide-react";
+import {
+  AlertTriangle,
+  Bell,
+  CheckCircle2,
+  FileText,
+  Info,
+  Search,
+  Settings,
+  Sparkles,
+} from "lucide-react";
 
+import { AiAssistantDialog } from "@/components/ai/AiAssistantDialog";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -232,6 +242,18 @@ export function TopBar() {
           />
         </div>
       </div>
+
+      <AiAssistantDialog
+        surface="general"
+        title="MediMate AI Assistant"
+        description="Ask across patients, medications, adherence, prescriptions, caregivers, and reports from anywhere in the app."
+        triggerLabel="MediMate AI"
+        defaultQuestion="What are the most important care issues to focus on right now across this workspace?"
+        triggerVariant="outline"
+        triggerSize="sm"
+        triggerClassName="hidden sm:inline-flex"
+        icon={Sparkles}
+      />
 
       <Popover open={open} onOpenChange={setOpen}>
         <PopoverTrigger asChild>

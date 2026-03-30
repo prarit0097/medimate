@@ -6,6 +6,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { Loader2, Plus, Search, Users } from "lucide-react";
 
+import { AiAssistantDialog } from "@/components/ai/AiAssistantDialog";
 import { AdherenceRing } from "@/components/common/AdherenceRing";
 import { ErrorState } from "@/components/common/ErrorState";
 import { EmptyState } from "@/components/common/EmptyState";
@@ -166,10 +167,19 @@ export default function Patients() {
           <h1 className="text-2xl font-bold">Patients</h1>
           <p className="mt-1 text-muted-foreground">Manage and monitor patient profiles</p>
         </div>
-        <Button type="button" onClick={() => setIsDialogOpen(true)}>
-          <Plus className="mr-2 h-4 w-4" />
-          Add Patient
-        </Button>
+        <div className="flex gap-2">
+          <AiAssistantDialog
+            surface="patients"
+            title="AI Patient Prioritization"
+            description="Review the current patient roster with adherence, refill, and care-risk context from MediMate."
+            triggerLabel="AI Prioritize"
+            defaultQuestion="Which patients need follow-up first, and what should the care team do next for each?"
+          />
+          <Button type="button" onClick={() => setIsDialogOpen(true)}>
+            <Plus className="mr-2 h-4 w-4" />
+            Add Patient
+          </Button>
+        </div>
       </div>
 
       <div className="relative max-w-sm">

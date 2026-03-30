@@ -19,6 +19,47 @@ export interface AuthTokens {
   refresh: string;
 }
 
+export type AiSurface =
+  | "general"
+  | "dashboard"
+  | "patients"
+  | "patient"
+  | "medications"
+  | "prescriptions"
+  | "dose_logs"
+  | "caregivers"
+  | "provider_access"
+  | "reports";
+
+export interface AiStatusResponse {
+  enabled: boolean;
+  configured: boolean;
+  model: string;
+  missing_configuration: string[];
+  supported_surfaces: AiSurface[];
+  note: string;
+}
+
+export interface AiAssistRequestPayload {
+  surface: AiSurface;
+  patient_id?: string;
+  medication_id?: string;
+  prescription_id?: string;
+  question?: string;
+}
+
+export interface AiAssistResponse {
+  title: string;
+  summary: string;
+  highlights: string[];
+  actions: string[];
+  warnings: string[];
+  disclaimer: string;
+  surface: AiSurface;
+  model: string;
+  generated_at: string;
+}
+
 export interface PaginatedResponse<T> {
   count: number;
   next: string | null;

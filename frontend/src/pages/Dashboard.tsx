@@ -26,6 +26,7 @@ import {
   YAxis,
 } from "recharts";
 
+import { AiAssistantDialog } from "@/components/ai/AiAssistantDialog";
 import { AdherenceRing } from "@/components/common/AdherenceRing";
 import { EmptyState } from "@/components/common/EmptyState";
 import { ErrorState } from "@/components/common/ErrorState";
@@ -117,6 +118,13 @@ export default function Dashboard() {
           <p className="mt-1 max-w-2xl text-muted-foreground">Live dashboard built from patients, medications, reminders, dose logs, prescriptions, and care-team links.</p>
         </div>
         <div className="grid grid-cols-2 gap-2 sm:flex sm:flex-wrap">
+          <AiAssistantDialog
+            surface="dashboard"
+            title="AI Dashboard Summary"
+            description="Generate an AI summary of today's adherence signals, refill risk, and care-team follow-up priorities."
+            triggerLabel="AI Summary"
+            defaultQuestion="Summarize today's dashboard, highlight risks, and suggest the best next actions."
+          />
           <Button asChild variant="outline"><Link to="/app/patients"><UserPlus className="mr-2 h-4 w-4" />Add Patient</Link></Button>
           <Button asChild variant="outline"><Link to="/app/medications"><Pill className="mr-2 h-4 w-4" />Add Medication</Link></Button>
           <Button asChild variant="outline"><Link to="/app/prescriptions"><FileUp className="mr-2 h-4 w-4" />Upload Rx</Link></Button>

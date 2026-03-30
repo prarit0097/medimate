@@ -11,6 +11,8 @@ env = environ.Env(
     ALLOWED_HOSTS=(list, ["127.0.0.1", "localhost"]),
     CSRF_TRUSTED_ORIGINS=(list, []),
     CORS_ALLOW_ALL_ORIGINS=(bool, True),
+    OPENAI_API_KEY=(str, ""),
+    OPENAI_MODEL=(str, "gpt-5-mini"),
 )
 environ.Env.read_env(BASE_DIR / ".env")
 
@@ -33,6 +35,7 @@ INSTALLED_APPS = [
     "common",
     "accounts",
     "care",
+    "ai_assistant",
 ]
 
 MIDDLEWARE = [
@@ -79,6 +82,8 @@ AUTH_PASSWORD_VALIDATORS = [
 
 LANGUAGE_CODE = "en-us"
 TIME_ZONE = env("TIME_ZONE", default="Asia/Kolkata")
+OPENAI_API_KEY = env("OPENAI_API_KEY")
+OPENAI_MODEL = env("OPENAI_MODEL")
 
 USE_I18N = True
 USE_TZ = True

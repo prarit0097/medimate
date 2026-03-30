@@ -19,6 +19,7 @@ import {
   YAxis,
 } from "recharts";
 
+import { AiAssistantDialog } from "@/components/ai/AiAssistantDialog";
 import { AdherenceRing } from "@/components/common/AdherenceRing";
 import { EmptyState } from "@/components/common/EmptyState";
 import { ErrorState } from "@/components/common/ErrorState";
@@ -177,6 +178,13 @@ export default function Reports() {
           </p>
         </div>
         <div className="flex gap-2">
+          <AiAssistantDialog
+            surface="reports"
+            title="AI Executive Report"
+            description="Generate an executive narrative from MediMate adherence, refill, and medication burden data."
+            triggerLabel="AI Narrative"
+            defaultQuestion="Write an executive summary of the current reports, including main risks and recommended actions."
+          />
           <Button variant="outline" onClick={() => window.print()}>
             <Printer className="mr-2 h-4 w-4" />
             Print

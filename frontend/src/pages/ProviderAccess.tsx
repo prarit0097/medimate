@@ -2,6 +2,7 @@ import { useDeferredValue, useMemo, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Loader2, Plus, Search, Shield } from "lucide-react";
 
+import { AiAssistantDialog } from "@/components/ai/AiAssistantDialog";
 import { EmptyState } from "@/components/common/EmptyState";
 import { ErrorState } from "@/components/common/ErrorState";
 import { PageSkeleton } from "@/components/common/LoadingSkeleton";
@@ -171,14 +172,23 @@ export default function ProviderAccessPage() {
             Manage which healthcare providers can view or manage patient data.
           </p>
         </div>
-        <Button
-          type="button"
-          onClick={() => setIsDialogOpen(true)}
-          disabled={!patientsQuery.isLoading && patients.length === 0}
-        >
-          <Plus className="mr-2 h-4 w-4" />
-          Add Provider
-        </Button>
+        <div className="flex gap-2">
+          <AiAssistantDialog
+            surface="provider_access"
+            title="AI Provider Access Review"
+            description="Review provider access coverage, permissions, and care-coordination setup across patient records."
+            triggerLabel="AI Review"
+            defaultQuestion="Review provider access and identify missing coverage, permission risks, or coordination gaps."
+          />
+          <Button
+            type="button"
+            onClick={() => setIsDialogOpen(true)}
+            disabled={!patientsQuery.isLoading && patients.length === 0}
+          >
+            <Plus className="mr-2 h-4 w-4" />
+            Add Provider
+          </Button>
+        </div>
       </div>
 
       <div className="relative max-w-sm">

@@ -18,6 +18,7 @@ urlpatterns = [
     ),
     path("api/v1/auth/", include("accounts.urls")),
     path("api/v1/", include("care.urls")),
+    path("api/v1/ai/", include("ai_assistant.urls")),
 ]
 
 if settings.DEBUG:

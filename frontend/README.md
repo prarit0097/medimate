@@ -9,6 +9,8 @@ Frontend workspace for the MediMate project. This is a Vite + React + TypeScript
 - medications, prescriptions, dose logs, caregivers, provider access, reports, and settings are wired to the Django backend
 - dashboard is wired to live backend aggregates and schedule actions
 - top-bar bell is wired to live notification items and browser-notification permission flow
+- top-bar global MediMate AI assistant is wired to backend AI endpoints
+- dashboard, patients, patient detail, medications, prescriptions, dose logs, caregivers, provider access, reports, and settings now have page-aware AI actions
 - API base defaults to `/api/v1`
 - Vite dev server proxies `/api/*` requests to `http://127.0.0.1:8000`
 - top-bar global search is still a placeholder
@@ -45,11 +47,12 @@ cd E:\coding\MediMate
 - `src/pages/Caregivers.tsx`: live caregiver relationship management
 - `src/pages/ProviderAccess.tsx`: live provider access management
 - `src/pages/Reports.tsx`: live summary, charts, print, and CSV export
-- `src/pages/Settings.tsx`: live profile, notification, and password settings
+- `src/pages/Settings.tsx`: live profile, notification, password, and AI settings
 - `src/pages/Dashboard.tsx`: live dashboard summary, today schedule, refill alerts, and care network widgets
+- `src/components/ai/AiAssistantDialog.tsx`: reusable AI assistant dialog used across the app
 - `src/lib/dashboard-utils.ts`: dashboard aggregation and scheduling helper
 - `src/lib/notification-utils.ts`: notification preferences, generated feed items, and storage helpers
 - `src/lib/export-utils.ts`: CSV download helper
 - `src/lib/mock-data.ts`: legacy sample data retained for reference
-- `src/components/layout/TopBar.tsx`: top-bar search shell and live notification center
+- `src/components/layout/TopBar.tsx`: top-bar search shell, live notification center, and global AI assistant entry
 - `vite.config.ts`: dev server and proxy settings

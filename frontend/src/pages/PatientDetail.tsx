@@ -13,6 +13,7 @@ import {
   Users,
 } from "lucide-react";
 
+import { AiAssistantDialog } from "@/components/ai/AiAssistantDialog";
 import { AdherenceRing } from "@/components/common/AdherenceRing";
 import {
   RefillRiskBadge,
@@ -191,6 +192,14 @@ export default function PatientDetail() {
             </div>
           </div>
         </div>
+        <AiAssistantDialog
+          surface="patient"
+          patientId={id}
+          title="AI Patient Care Brief"
+          description="Generate a patient-specific care summary from adherence, medication, prescription, and care-team data."
+          triggerLabel="AI Care Brief"
+          defaultQuestion="Summarize this patient's current adherence, refill risk, and the most important next care actions."
+        />
         <AdherenceRing score={adherenceScore} size="md" />
       </div>
 

@@ -2,6 +2,7 @@ import { useDeferredValue, useMemo, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Loader2, Plus, Search, Users } from "lucide-react";
 
+import { AiAssistantDialog } from "@/components/ai/AiAssistantDialog";
 import { EmptyState } from "@/components/common/EmptyState";
 import { ErrorState } from "@/components/common/ErrorState";
 import { PageSkeleton } from "@/components/common/LoadingSkeleton";
@@ -168,14 +169,23 @@ export default function Caregivers() {
             Manage caregiver relationships and alert preferences for patients.
           </p>
         </div>
-        <Button
-          type="button"
-          onClick={() => setIsDialogOpen(true)}
-          disabled={!patientsQuery.isLoading && patients.length === 0}
-        >
-          <Plus className="mr-2 h-4 w-4" />
-          Add Caregiver
-        </Button>
+        <div className="flex gap-2">
+          <AiAssistantDialog
+            surface="caregivers"
+            title="AI Caregiver Coordination Review"
+            description="Review caregiver coverage, primary contact setup, and alert preferences from the current care workspace."
+            triggerLabel="AI Review"
+            defaultQuestion="Review caregiver coverage and highlight any communication or alerting gaps that need attention."
+          />
+          <Button
+            type="button"
+            onClick={() => setIsDialogOpen(true)}
+            disabled={!patientsQuery.isLoading && patients.length === 0}
+          >
+            <Plus className="mr-2 h-4 w-4" />
+            Add Caregiver
+          </Button>
+        </div>
       </div>
 
       <div className="relative max-w-sm">

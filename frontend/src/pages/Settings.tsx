@@ -1,7 +1,8 @@
 import { useEffect, useState } from "react";
-import { useMutation } from "@tanstack/react-query";
-import { BellRing, Loader2 } from "lucide-react";
+import { useMutation, useQuery } from "@tanstack/react-query";
+import { BellRing, Loader2, Sparkles } from "lucide-react";
 
+import { AiAssistantDialog } from "@/components/ai/AiAssistantDialog";
 import { RoleBadge } from "@/components/common/Badges";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -23,7 +24,7 @@ import {
   saveNotificationPreferences,
 } from "@/lib/notification-utils";
 import { apiClient } from "@/services/api";
-import type { UpdateProfilePayload, User } from "@/types";
+import type { AiStatusResponse, UpdateProfilePayload, User } from "@/types";
 import type { NotificationPreferences } from "@/lib/notification-utils";
 
 interface PasswordFormState {
@@ -109,6 +110,12 @@ export default function Settings() {
         variant: "destructive",
       });
     },
+  });
+
+  const aiStatusQuery = useQuery({
+    queryKey: ["ai-status"],
+    queryFn: () => apiClient.get<AiStatusResponse>("/ai/status/"),
+    staleTime: 60_000,
   });
 
   if (!user) {
@@ -242,6 +249,7 @@ export default function Settings() {
         <TabsList className="bg-muted/50">
           <TabsTrigger value="profile">Profile</TabsTrigger>
           <TabsTrigger value="notifications">Notifications</TabsTrigger>
+          <TabsTrigger value="ai">AI</TabsTrigger>
           <TabsTrigger value="security">Security</TabsTrigger>
         </TabsList>
 
@@ -418,6 +426,76 @@ export default function Settings() {
               <Button type="button" onClick={handleNotificationSave}>
                 Save preferences
               </Button>
+            </div>
+          </div>
+        </TabsContent>
+
+        <TabsContent value="ai">
+          <div className="space-y-6 rounded-xl border border-border bg-card p-6">
+            <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+              <div>
+                <h3 className="flex items-center gap-2 font-semibold">
+                  <Sparkles className="h-4 w-4 text-primary" />
+                  MediMate AI
+                </h3>
+                <p className="mt-1 text-sm text-muted-foreground">
+                  Server-side OpenAI features power workspace summaries, patient briefs, report narratives, and workflow guidance.
+                </p>
+              </div>
+              <AiAssistantDialog
+                surface="general"
+                title="MediMate AI Workspace Assistant"
+                description="Ask about your full care workspace, patient follow-up priorities, medication risks, and operational next steps."
+                triggerLabel="Open AI Assistant"
+                defaultQuestion="What are the top care priorities across this MediMate workspace right now?"
+              />
+            </div>
+
+            {aiStatusQuery.isLoading ? (
+              <div className="flex items-center gap-2 rounded-xl border border-border p-4 text-sm text-muted-foreground">
+                <Loader2 className="h-4 w-4 animate-spin" />
+                Checking AI configuration...
+              </div>
+            ) : (
+              <div className="grid gap-4 sm:grid-cols-2">
+                <div className="rounded-xl border border-border bg-muted/20 p-4">
+                  <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
+                    Status
+                  </p>
+                  <p className="mt-2 text-lg font-semibold">
+                    {aiStatusQuery.data?.enabled ? "Configured" : "Needs OpenAI key"}
+                  </p>
+                  <p className="mt-1 text-sm text-muted-foreground">
+                    {aiStatusQuery.data?.enabled
+                      ? "AI features are active for the web app."
+                      : "Add OPENAI_API_KEY in .env and restart Django to activate AI."}
+                  </p>
+                </div>
+
+                <div className="rounded-xl border border-border bg-muted/20 p-4">
+                  <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
+                    Model
+                  </p>
+                  <p className="mt-2 text-lg font-semibold">
+                    {aiStatusQuery.data?.model || "Not available"}
+                  </p>
+                  <p className="mt-1 text-sm text-muted-foreground">
+                    The OpenAI key remains server-side and is never exposed in the browser.
+                  </p>
+                </div>
+              </div>
+            )}
+
+            <div className="rounded-xl border border-border bg-muted/20 p-4">
+              <p className="text-sm font-medium">Available AI surfaces</p>
+              <p className="mt-1 text-sm text-muted-foreground">
+                Dashboard, patients, patient detail, medications, prescriptions, dose logs, caregivers, provider access, reports, and the global workspace assistant.
+              </p>
+              {aiStatusQuery.data?.missing_configuration?.length ? (
+                <p className="mt-3 text-xs text-muted-foreground">
+                  Missing configuration: {aiStatusQuery.data.missing_configuration.join(", ")}
+                </p>
+              ) : null}
             </div>
           </div>
         </TabsContent>

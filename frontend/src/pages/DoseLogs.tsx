@@ -12,6 +12,7 @@ import {
   XCircle,
 } from "lucide-react";
 
+import { AiAssistantDialog } from "@/components/ai/AiAssistantDialog";
 import { EmptyState } from "@/components/common/EmptyState";
 import { ErrorState } from "@/components/common/ErrorState";
 import { PageSkeleton } from "@/components/common/LoadingSkeleton";
@@ -280,6 +281,13 @@ export default function DoseLogs() {
           </p>
         </div>
         <div className="flex gap-2">
+          <AiAssistantDialog
+            surface="dose_logs"
+            title="AI Adherence Analysis"
+            description="Use recent dose activity to identify adherence patterns, missed-dose clusters, and outreach priorities."
+            triggerLabel="AI Analyze"
+            defaultQuestion="Analyze the recent dose logs and explain the most important adherence patterns or risks."
+          />
           <Button variant="outline" onClick={handleExport}>
             <Download className="mr-2 h-4 w-4" />
             Export

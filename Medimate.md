@@ -27,6 +27,8 @@ Current codebase ek Django + DRF backend scaffold hai jisme:
 
 - root landing page at `/`
 - integrated `frontend/` Vite + React care portal workspace
+- server-side OpenAI configuration support via `.env`
+- OpenAI-backed AI assistant endpoints
 - JWT authentication
 - profile update, password change, and user-directory auth endpoints
 - custom email-based user model
@@ -42,6 +44,8 @@ Current codebase ek Django + DRF backend scaffold hai jisme:
 - frontend patients list, add-patient flow, and patient detail wired to backend
 - frontend medications, prescriptions, dose logs, caregivers, provider access, reports, and settings screens wired to backend
 - frontend dashboard page bhi live backend aggregates aur actions se wired hai
+- top-bar global MediMate AI assistant
+- dashboard, patients, patient detail, medications, prescriptions, dose logs, caregivers, provider access, reports, aur settings par page-aware AI actions
 
 ## Who Uses the App
 
@@ -77,6 +81,7 @@ Typical flow:
 4. Har medication ke liye reminders/time slots define hote hain.
 5. Dose log create hota hai jab medicine taken, skipped, snoozed ya missed hoti hai.
 6. Dashboard endpoint patient ke adherence score aur refill risk ka summary return karta hai.
+7. User kisi bhi major page se MediMate AI ko open karke context-aware summary, action plan, ya follow-up guidance generate kar sakta hai.
 
 ## Tech Stack
 
@@ -88,6 +93,7 @@ Typical flow:
 - django-filter
 - django-cors-headers
 - Pillow
+- OpenAI Python SDK
 - SQLite default database
 - React 18
 - TypeScript
@@ -105,6 +111,7 @@ cd E:\coding\MediMate
 python -m venv .venv
 .\.venv\Scripts\python -m pip install -r requirements.txt
 copy .env.example .env
+# optional but recommended for AI features: OPENAI_API_KEY add karo
 .\.venv\Scripts\python manage.py migrate
 .\.venv\Scripts\python manage.py createsuperuser
 .\.venv\Scripts\python manage.py runserver
@@ -148,6 +155,8 @@ Project `.env` file use karta hai. Current supported values:
 - `CORS_ALLOW_ALL_ORIGINS`
 - `DATABASE_URL`
 - `TIME_ZONE`
+- `OPENAI_API_KEY`
+- `OPENAI_MODEL`
 
 ## Main API Endpoints
 
@@ -170,6 +179,8 @@ Project `.env` file use karta hai. Current supported values:
 - `GET|POST /api/v1/medications/`
 - `GET|POST /api/v1/dose-logs/`
 - `GET /api/v1/dashboard/patients/<patient_id>/`
+- `GET /api/v1/ai/status/`
+- `POST /api/v1/ai/assist/`
 
 ## File-by-File Project Map
 
@@ -178,11 +189,13 @@ Project `.env` file use karta hai. Current supported values:
 `/.env.example`
 - sample environment configuration
 - local development ke liye required env keys dikhata hai
+- OpenAI API key aur default model placeholders bhi include karta hai
 
 `/.env`
 - local environment configuration file
 - gitignored hai aur machine-specific secrets rakhta hai
 - current local development ke liye generated Django `SECRET_KEY` isme stored hai
+- user apni `OPENAI_API_KEY` isi file mein add karega taaki AI features enable ho sake
 
 `/.gitignore`
 - virtualenv, db, media, cache aur local env files ko ignore karta hai
@@ -228,9 +241,10 @@ Project `.env` file use karta hai. Current supported values:
 - custom user model set karta hai
 - DRF, JWT, CORS, media/static, env config define karta hai
 - root `templates/` folder bhi load karta hai
+- OpenAI API key aur model ko server-side env se read karta hai
 
 Important settings inside `config/settings.py`:
-- `INSTALLED_APPS`: Django apps plus `accounts`, `care`, `common`, DRF-related packages
+- `INSTALLED_APPS`: Django apps plus `accounts`, `care`, `common`, `ai_assistant`, DRF-related packages
 - `MIDDLEWARE`: request/response middleware chain
 - `DATABASES`: env-based database configuration
 - `AUTH_USER_MODEL`: custom `accounts.User`
@@ -238,10 +252,11 @@ Important settings inside `config/settings.py`:
 - `SIMPLE_JWT`: token lifetime configuration
 - `SPECTACULAR_SETTINGS`: API docs configuration
 - `TEMPLATES["DIRS"]`: project-level `templates/` folder load karta hai
+- `OPENAI_API_KEY` / `OPENAI_MODEL`: AI assistant backend configuration
 
 `/config/urls.py`
 - complete URL router
-- root landing page, admin, health check, schema/docs, auth routes aur care routes ko wire karta hai
+- root landing page, admin, health check, schema/docs, auth routes, care routes, aur AI routes ko wire karta hai
 
 `/config/wsgi.py`
 - WSGI entry point
@@ -335,6 +350,7 @@ Code inside `common/views.py`:
 - shared frontend TypeScript types
 - user, patient, medication, dose log, dashboard aur auth payload shapes define karta hai
 - create/update payload contracts bhi yahin stored hain
+- AI status/request/response contracts bhi yahin defined hain
 
 `/frontend/src/lib/patient-utils.ts`
 - patient-related frontend helper functions
@@ -360,6 +376,7 @@ Code inside `common/views.py`:
 `/frontend/src/pages/*.tsx`
 - main route-level pages
 - login/register backend-ready hain
+- har major app page par page-aware AI action available hai
 - `Patients.tsx` live patient list aur create dialog backend se chalata hai
 - `PatientDetail.tsx` live patient profile, medications, logs, prescriptions aur care-team data backend se load karta hai
 - `Medications.tsx` live medication list, reminder summary aur add-medication dialog provide karta hai
@@ -373,7 +390,12 @@ Code inside `common/views.py`:
 
 `/frontend/src/components/layout/*`
 - authenticated app shell, sidebar aur topbar components
-- `TopBar.tsx` live notification bell, unread count, dropdown feed, aur browser-notification enable flow handle karta hai
+- `TopBar.tsx` live notification bell, unread count, dropdown feed, browser-notification enable flow, aur global MediMate AI launcher handle karta hai
+
+`/frontend/src/components/ai/AiAssistantDialog.tsx`
+- reusable AI dialog component
+- server-side AI status check karta hai
+- page-specific prompt aur context ke saath AI insights render karta hai
 
 `/frontend/src/components/common/*`
 - reusable display components like stats, rings, empty states, and badges
@@ -387,6 +409,35 @@ Code inside `common/views.py`:
 
 `/frontend/README.md`
 - frontend-specific run notes aur current status summary
+
+### AI Assistant app
+
+`/ai_assistant/__init__.py`
+- package marker
+
+`/ai_assistant/apps.py`
+- Django app config for MediMate AI assistant
+
+`/ai_assistant/serializers.py`
+- AI request payload validate karta hai
+- patient-level AI requests ke liye required `patient_id` enforce karta hai
+
+`/ai_assistant/services.py`
+- AI assistant ka core server-side service layer
+- accessible patient/workspace context build karta hai
+- medication, prescription, dose log, caregiver, provider aur refill context aggregate karta hai
+- OpenAI Responses API call karta hai
+- output ko normalized JSON insight format mein convert karta hai
+
+`/ai_assistant/views.py`
+- `GET /api/v1/ai/status/` aur `POST /api/v1/ai/assist/` endpoints expose karta hai
+- missing API key, permission issues, aur AI response errors ko safe HTTP responses mein map karta hai
+
+`/ai_assistant/urls.py`
+- AI status aur assist routes define karta hai
+
+`/ai_assistant/tests.py`
+- AI status endpoint aur assist endpoint response contract test karta hai
 
 ### Accounts app
 
@@ -580,13 +631,15 @@ Code inside `care/views.py`:
 
 ## Current Testing Coverage
 
-Abhi 5 backend tests aur 1 frontend smoke test run hote hain:
+Abhi 7 backend tests aur 1 frontend smoke test run hote hain:
 
 - root landing page test
 - health check test
 - auth register/login/me flow test
 - auth profile update, user directory, aur password change flow test
 - patient/medication/dashboard integration test
+- AI status endpoint test
+- AI assist endpoint contract test
 - frontend Vitest example smoke test
 
 ## Current Limitations
@@ -597,6 +650,8 @@ Abhi project mein ye cheezein baaki hain:
 - IVR integration
 - prescription OCR processing pipeline
 - Celery reminder scheduler
+- AI features ko actual OpenAI responses ke liye valid `OPENAI_API_KEY` chahiye
+- AI guidance workflow support hai, clinical decision replacement nahi
 - strong role-based permission system
 - top-bar global search abhi backend se wire nahi hai
 - edit/delete flows ka richer UX abhi missing hai for most newly-wired frontend pages
@@ -631,3 +686,9 @@ Yeh file har code, file, architecture, command, API, workflow ya config change k
 - frontend browser-tab title aur meta branding ko `MediMate` par update kiya gaya
 - frontend dashboard ko live backend data, schedule actions, care network counts, aur responsive widgets ke saath rebuild kiya gaya
 - top-bar notification bell ko live in-app feed, unread count, settings-synced preferences, aur browser notification permission ke saath enable kiya gaya
+- OpenAI Python SDK dependency add ki gayi
+- `.env` aur `.env.example` mein `OPENAI_API_KEY` aur `OPENAI_MODEL` placeholders add kiye gaye
+- new `ai_assistant` Django app add ki gayi with AI status aur assist endpoints
+- backend workspace-aware AI context builder aur OpenAI Responses API integration add ki gayi
+- reusable frontend AI dialog add karke global top-bar assistant enable kiya gaya
+- dashboard, patients, patient detail, medications, prescriptions, dose logs, caregivers, provider access, reports, aur settings pages par AI actions add kiye gaye

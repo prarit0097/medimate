@@ -2,6 +2,7 @@ import { useDeferredValue, useMemo, useRef, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { FileText, Loader2, Plus, Search, Upload } from "lucide-react";
 
+import { AiAssistantDialog } from "@/components/ai/AiAssistantDialog";
 import { EmptyState } from "@/components/common/EmptyState";
 import { ErrorState } from "@/components/common/ErrorState";
 import { PageSkeleton } from "@/components/common/LoadingSkeleton";
@@ -183,14 +184,23 @@ export default function Prescriptions() {
             Upload prescription documents and track review status.
           </p>
         </div>
-        <Button
-          type="button"
-          onClick={() => setIsDialogOpen(true)}
-          disabled={!patientsQuery.isLoading && patients.length === 0}
-        >
-          <Plus className="mr-2 h-4 w-4" />
-          Upload Prescription
-        </Button>
+        <div className="flex gap-2">
+          <AiAssistantDialog
+            surface="prescriptions"
+            title="AI Prescription Review"
+            description="Summarize prescription review priorities, note missing information, and suggest the next team action."
+            triggerLabel="AI Review"
+            defaultQuestion="Review the uploaded prescriptions and summarize the main follow-up items or clarification needs."
+          />
+          <Button
+            type="button"
+            onClick={() => setIsDialogOpen(true)}
+            disabled={!patientsQuery.isLoading && patients.length === 0}
+          >
+            <Plus className="mr-2 h-4 w-4" />
+            Upload Prescription
+          </Button>
+        </div>
       </div>
 
       <div className="flex flex-col gap-3 sm:flex-row">

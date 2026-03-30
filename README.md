@@ -12,6 +12,7 @@ MediMate is an API-first medication adherence platform. This repository now cont
 - Medication plans, reminder slots, prescription uploads, and dose logs
 - Provider access records for doctor/pharmacist visibility
 - Adherence and refill summary endpoint for dashboards
+- OpenAI-backed AI assistant endpoints for workspace, patient, medication, prescription, adherence, and report summaries
 - OpenAPI schema and Swagger docs
 - Integrated care-portal frontend workspace
 
@@ -23,6 +24,7 @@ MediMate is an API-first medication adherence platform. This repository now cont
 - Simple JWT
 - drf-spectacular
 - SQLite by default, Postgres-ready via `DATABASE_URL`
+- OpenAI Python SDK for server-side AI features
 - React 18 + TypeScript + Vite + Tailwind CSS for the frontend
 
 ## Quick start
@@ -35,6 +37,7 @@ python -m venv .venv
 .\.venv\Scripts\activate
 pip install -r requirements.txt
 copy .env.example .env
+# add OPENAI_API_KEY in .env if you want AI features enabled
 python manage.py migrate
 python manage.py createsuperuser
 python manage.py runserver
@@ -66,6 +69,8 @@ Backend API/docs: `http://127.0.0.1:8000`
 - `GET|POST /api/v1/medications/`
 - `GET|POST /api/v1/dose-logs/`
 - `GET /api/v1/dashboard/patients/<patient_id>/`
+- `GET /api/v1/ai/status/`
+- `POST /api/v1/ai/assist/`
 - `GET /api/schema/`
 - `GET /api/docs/`
 
@@ -81,7 +86,7 @@ This scaffold is aligned to the MVP slice from the planning document:
 
 ## Frontend note
 
-The imported care portal is now part of this repo. Authentication, dashboard, patients, medications, prescriptions, dose logs, caregivers, provider access, reports, settings, and top-bar notifications are wired to the backend.
+The imported care portal is now part of this repo. Authentication, dashboard, patients, medications, prescriptions, dose logs, caregivers, provider access, reports, settings, top-bar notifications, and AI assistant entry points are wired to the backend.
 
 ## Suggested next build steps
 
